@@ -1,8 +1,10 @@
 import { Bookmark, Play, Plus, Film } from "lucide-react";
 import { formatRuntime } from "../utils/formatters.js";
 import { getPosterUrl } from "../utils/movieFallbacks.js";
+import { buildYouTubeWatchUrl, resolveTrailerKey } from "../utils/youtube.js";
 import ScoreStrip from "./ScoreStrip.jsx";
 import CastMember from "./spotlight/CastMember.jsx";
+import YouTubeTrailerEmbed from "./YouTubeTrailerEmbed.jsx";
 
 function resolveCast(movie) {
   if (!movie) return [];
@@ -109,6 +111,8 @@ function FilledSpotlight({ movie, semanticScore }) {
   const cast = resolveCast(movie);
   const certification = resolveCertification(movie);
   const runtime = formatRuntime(movie.runtime);
+  const trailerKey = resolveTrailerKey(movie);
+  const trailerWatchUrl = buildYouTubeWatchUrl(trailerKey);
 
   return (
     <SpotlightCardShell
@@ -155,6 +159,13 @@ function FilledSpotlight({ movie, semanticScore }) {
         <p className="spotlight-overview">{movie.overview}</p>
 
         <ScoreStrip movie={movie} semanticScore={semanticScore} />
+
+        {trailerKey ? (
+          <YouTubeTrailerEmbed
+            videoKey={trailerKey}
+            title={`${movie.title} trailer`}
+          />
+        ) : null}
       </div>
 
       <aside className="spotlight-cast-panel">
@@ -170,12 +181,12 @@ function FilledSpotlight({ movie, semanticScore }) {
         </div>
 
         <div className="spotlight-actions">
-          {movie.trailerUrl ? (
+          {trailerWatchUrl ? (
             <a
-              href={movie.trailerUrl}
+              href={trailerWatchUrl}
               className="watch-trailer-button"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener"
             >
               <Play size={16} fill="currentColor" />
               Watch Trailer

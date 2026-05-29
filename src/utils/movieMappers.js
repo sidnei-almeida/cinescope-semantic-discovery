@@ -6,7 +6,7 @@ import {
   getBackdropUrl,
   pickTrailerKey,
 } from "./movieFallbacks.js";
-import { YOUTUBE_BASE_EMBED } from "../config/constants.js";
+import { buildYouTubeEmbedUrl } from "./youtube.js";
 import { buildTmdbImageUrl } from "../services/tmdbApi.js";
 import { safeValue } from "./safeValue.js";
 import { attachRecommendationSource } from "./recommendationSource.js";
@@ -93,9 +93,8 @@ export function normalizeTmdbMovie({ base, details, credits, videos }) {
       buildTmdbImageUrl(backdropPath, "w1280") || getBackdropUrl({ backdrop_path: backdropPath }),
     cast,
     trailer,
-    trailerUrl: trailer?.key
-      ? `https://www.youtube.com/watch?v=${trailer.key}`
-      : null,
+    trailerKey: trailer?.key ?? null,
+    trailerUrl: trailer?.key ? buildYouTubeEmbedUrl(trailer.key) : null,
     similarityScore: base.similarityScore,
     raw: base.raw,
   };
@@ -126,6 +125,7 @@ export function mapEnrichedMovieToInternal(enriched, options = {}) {
     popularity: enriched.popularity,
     cast: enriched.cast ?? [],
     leadCast: (enriched.cast ?? []).map((c) => c.name).filter(Boolean),
+    trailerKey: enriched.trailerKey ?? enriched.trailer?.key ?? null,
     trailerUrl: enriched.trailerUrl,
     semanticScore: enriched.similarityScore,
     similarityScore: enriched.similarityScore,
@@ -277,7 +277,8 @@ export function mapTmdbMovieToInternal(details, options = {}) {
     director: directors[0] ?? null,
     directors,
     writers,
-    trailerUrl: trailerKey ? `${YOUTUBE_BASE_EMBED}/${trailerKey}?autoplay=0&rel=0` : null,
+    trailerKey: trailerKey ?? null,
+    trailerUrl: trailerKey ? buildYouTubeEmbedUrl(trailerKey) : null,
     keywords: (details.keywords?.keywords ?? []).map((kw) => kw.name),
     imdbId:
       details.external_ids?.imdb_id ??
