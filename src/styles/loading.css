@@ -1,0 +1,291 @@
+/* ─── Full-screen boot / wake loading ─── */
+
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(215, 178, 90, 0.1), transparent 32%),
+    linear-gradient(180deg, #090908 0%, #050504 100%);
+  color: var(--text-primary);
+}
+
+.loading-content {
+  position: relative;
+  z-index: 2;
+  width: min(720px, calc(100% - 48px));
+  text-align: center;
+  animation: loadingContentEnter 900ms var(--ease-out-soft, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.loading-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  color: var(--accent-gold-light);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.loading-logo-img {
+  flex-shrink: 0;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 14px rgba(215, 178, 90, 0.22));
+}
+
+.loading-content h1 {
+  margin: 0;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: clamp(46px, 7vw, 92px);
+  line-height: 0.95;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  background: linear-gradient(
+    180deg,
+    #fffbea 0%,
+    #f6edcf 52%,
+    #ead9a7 82%,
+    #c2a04b 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.loading-message {
+  margin: 22px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  min-height: 1.4em;
+  transition: opacity 0.35s ease;
+}
+
+.loading-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.loading-ornament span {
+  width: 96px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(215, 178, 90, 0.52),
+    transparent
+  );
+  transform-origin: center;
+  animation: ornamentReveal 900ms ease-out 260ms both;
+}
+
+.loading-ornament i {
+  color: var(--accent-gold);
+  font-style: normal;
+  font-size: 14px;
+  animation: loadingStarPulse 3s ease-in-out infinite;
+}
+
+.loading-progress {
+  position: relative;
+  width: min(360px, 72vw);
+  height: 2px;
+  margin: 28px auto 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(244, 239, 226, 0.1);
+}
+
+.loading-progress span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(215, 178, 90, 0.95),
+    transparent
+  );
+  animation: loadingProgressSweep 1.45s ease-in-out infinite;
+}
+
+.loading-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+}
+
+.loading-projector {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 90deg at 50% 50%,
+    transparent 0deg,
+    rgba(215, 178, 90, 0.045) 24deg,
+    transparent 48deg,
+    transparent 360deg
+  );
+  filter: blur(16px);
+  opacity: 0.65;
+  animation: projectorSweep 8s linear infinite;
+}
+
+/* ─── Inline search / enrichment status ─── */
+
+.spotlight-loading-bar,
+.recommendations-loading-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.inline-loading-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: rgba(18, 17, 14, 0.74);
+  border: 1px solid rgba(215, 178, 90, 0.16);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent-gold);
+  box-shadow: 0 0 16px rgba(215, 178, 90, 0.36);
+  animation: loadingDotPulse 1.2s ease-in-out infinite;
+}
+
+/* ─── Skeleton shimmer (optional enhancement) ─── */
+
+.skeleton.skeleton-shimmer,
+.skeleton-image.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(244, 239, 226, 0.045);
+}
+
+.skeleton.skeleton-shimmer::after,
+.skeleton-image.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(215, 178, 90, 0.1),
+    transparent
+  );
+  animation: skeletonSweep 1.6s ease-in-out infinite;
+}
+
+@keyframes loadingContentEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes ornamentReveal {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes loadingStarPulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes loadingProgressSweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
+@keyframes projectorSweep {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes loadingDotPulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes skeletonSweep {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-screen *,
+  .loading-screen *::before,
+  .loading-screen *::after,
+  .inline-loading-status .loading-dot,
+  .skeleton-shimmer::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .loading-content {
+    filter: none;
+    transform: none;
+  }
+}

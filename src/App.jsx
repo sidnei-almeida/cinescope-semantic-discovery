@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
 import clsx from "clsx";
 import Header from "./components/Header.jsx";
 import HeroSection from "./components/HeroSection.jsx";
@@ -8,6 +7,7 @@ import RecommendationGrid from "./components/RecommendationGrid.jsx";
 import EngineSection from "./components/EngineSection.jsx";
 import TechnicalSection from "./components/TechnicalSection.jsx";
 import Footer from "./components/Footer.jsx";
+import LoadingScreen from "./components/LoadingScreen.jsx";
 import { focusSearchInput } from "./components/SearchHero.jsx";
 import { searchMovie, getMovieDetails } from "./services/tmdbApi.js";
 import {
@@ -17,12 +17,26 @@ import {
 } from "./services/movieEnrichment.js";
 import { checkRecommenderHealth, isThematicQuery } from "./services/recommenderApi.js";
 import { resolveDefaultSpotlightMovie } from "./utils/defaultSpotlight.js";
+import {
+  LOADING_MESSAGES,
+  BOOT_MIN_MS,
+  BOOT_ROTATE_MS,
+} from "./config/loadingMessages.js";
+import {
+  delay,
+  runWithRecommendationStages,
+  startWakeMessageTimers,
+} from "./utils/loadingStages.js";
 
 export default function App() {
+  const [isBooting, setIsBooting] = useState(true);
+  const [bootMessage, setBootMessage] = useState(LOADING_MESSAGES.boot);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [selectedScore, setSelectedScore] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(null);
+  const [inlineStatusMessage, setInlineStatusMessage] = useState(null);
   const [usedTmdbFallback, setUsedTmdbFallback] = useState(false);
   const [error, setError] = useState(null);
   const [wakingUp, setWakingUp] = useState(false);
@@ -30,10 +44,28 @@ export default function App() {
   const initialLoadDone = useRef(false);
 
   useEffect(() => {
-    checkRecommenderHealth().then(({ ok, modelLoaded }) => {
-      setRecommenderReady(ok && modelLoaded);
-      if (!ok) setWakingUp(true);
+    let cancelled = false;
+    let rotateIndex = 0;
+    const clearWake = startWakeMessageTimers(setBootMessage);
+
+    const rotateTimer = window.setInterval(() => {
+      rotateIndex = (rotateIndex + 1) % LOADING_MESSAGES.bootRotate.length;
+      setBootMessage(LOADING_MESSAGES.bootRotate[rotateIndex]);
+    }, BOOT_ROTATE_MS);
+
+    Promise.all([checkRecommenderHealth(), delay(BOOT_MIN_MS)]).then(([health]) => {
+      if (cancelled) return;
+      const ready = health.ok && health.modelLoaded;
+      setRecommenderReady(ready);
+      if (!ready) setWakingUp(true);
+      setIsBooting(false);
     });
+
+    return () => {
+      cancelled = true;
+      clearWake();
+      window.clearInterval(rotateTimer);
+    };
   }, []);
 
   const applyRecommendations = useCallback((recs, fallback) => {
@@ -44,36 +76,45 @@ export default function App() {
   const loadMovieById = useCallback(
     async (movieId, options = {}) => {
       const { keepRecommendations = false } = options;
+      let clearSearchWake = null;
 
       setLoading(true);
       setError(null);
       setWakingUp(false);
+      setInlineStatusMessage(null);
       if (!keepRecommendations) setRecommendations([]);
 
       try {
+        setLoadingStage("spotlight");
         const details = await getMovieDetails(movieId);
         const normalized = normalizeSourceMovie(details);
         setSelectedMovie(normalized);
         setSelectedScore(null);
 
         if (!keepRecommendations) {
-          const { recommendations: recs, usedTmdbFallback: fallback } =
-            await processRecommendations(movieId, details);
-          applyRecommendations(recs, fallback);
+          clearSearchWake = startWakeMessageTimers(setInlineStatusMessage);
+
+          const result = await runWithRecommendationStages(setLoadingStage, () =>
+            processRecommendations(movieId, details)
+          );
+          applyRecommendations(result.recommendations, result.usedTmdbFallback);
         }
       } catch (err) {
         if (err.isWakeUp) setWakingUp(true);
         setError(err.message || "Recommendation engine failed.");
         console.error("[CineScope]", err);
       } finally {
+        clearSearchWake?.();
         setLoading(false);
+        setLoadingStage(null);
+        setInlineStatusMessage(null);
       }
     },
     [applyRecommendations]
   );
 
   useEffect(() => {
-    if (initialLoadDone.current) return;
+    if (isBooting || initialLoadDone.current) return;
     initialLoadDone.current = true;
 
     resolveDefaultSpotlightMovie()
@@ -83,7 +124,7 @@ export default function App() {
       .catch((err) => {
         console.warn("[CineScope] default spotlight load failed:", err?.message);
       });
-  }, [loadMovieById]);
+  }, [isBooting, loadMovieById]);
 
   const handleSelectFromSearch = useCallback(
     async (movieResult) => {
@@ -93,12 +134,32 @@ export default function App() {
     [loadMovieById]
   );
 
+  const applySynopsisResults = useCallback(
+    async (recs, fallback) => {
+      applyRecommendations(recs, fallback);
+      const first = recs[0];
+      const firstId = first.movie?.id ?? first.movie?.tmdbId;
+      if (firstId) {
+        setLoadingStage("spotlight");
+        const details = await getMovieDetails(firstId);
+        setSelectedMovie(normalizeSourceMovie(details));
+      } else {
+        setSelectedMovie(first.movie);
+      }
+      setSelectedScore(first.score ?? null);
+    },
+    [applyRecommendations]
+  );
+
   const handleSearch = useCallback(
     async (query) => {
       const trimmed = String(query ?? "").trim();
+      let clearSearchWake = null;
+
       setLoading(true);
       setError(null);
       setWakingUp(false);
+      setInlineStatusMessage(null);
       setRecommendations([]);
 
       try {
@@ -107,30 +168,26 @@ export default function App() {
           return;
         }
 
-        if (isThematicQuery(trimmed)) {
-          const { recommendations: recs, usedTmdbFallback: fallback } =
-            await processSynopsisQuery(trimmed);
+        clearSearchWake = startWakeMessageTimers(setInlineStatusMessage);
 
-          if (!recs.length) {
+        if (isThematicQuery(trimmed)) {
+          const result = await runWithRecommendationStages(setLoadingStage, () =>
+            processSynopsisQuery(trimmed)
+          );
+
+          if (!result.recommendations.length) {
             setError("No results found. Try another title or mood.");
             return;
           }
 
-          applyRecommendations(recs, fallback);
-          const first = recs[0];
-          const firstId = first.movie?.id ?? first.movie?.tmdbId;
-          if (firstId) {
-            const details = await getMovieDetails(firstId);
-            setSelectedMovie(normalizeSourceMovie(details));
-          } else {
-            setSelectedMovie(first.movie);
-          }
-          setSelectedScore(first.score ?? null);
+          await applySynopsisResults(result.recommendations, result.usedTmdbFallback);
           return;
         }
 
         const tmdbResults = await searchMovie(trimmed, { limit: 1 });
         if (tmdbResults.length > 0) {
+          clearSearchWake?.();
+          clearSearchWake = null;
           await loadMovieById(tmdbResults[0].id);
           return;
         }
@@ -142,24 +199,16 @@ export default function App() {
           return;
         }
 
-        const { recommendations: recs, usedTmdbFallback: fallback } =
-          await processSynopsisQuery(trimmed);
+        const result = await runWithRecommendationStages(setLoadingStage, () =>
+          processSynopsisQuery(trimmed)
+        );
 
-        if (!recs.length) {
+        if (!result.recommendations.length) {
           setError("No results found. Try another title or mood.");
           return;
         }
 
-        applyRecommendations(recs, fallback);
-        const first = recs[0];
-        const firstId = first.movie?.id ?? first.movie?.tmdbId;
-        if (firstId) {
-          const details = await getMovieDetails(firstId);
-          setSelectedMovie(normalizeSourceMovie(details));
-        } else {
-          setSelectedMovie(first.movie);
-        }
-        setSelectedScore(first.score ?? null);
+        await applySynopsisResults(result.recommendations, result.usedTmdbFallback);
       } catch (err) {
         if (err.isWakeUp) setWakingUp(true);
         if (err.code === "QUERY_TOO_SHORT") {
@@ -171,10 +220,13 @@ export default function App() {
         }
         console.error("[CineScope]", err);
       } finally {
+        clearSearchWake?.();
         setLoading(false);
+        setLoadingStage(null);
+        setInlineStatusMessage(null);
       }
     },
-    [loadMovieById, applyRecommendations]
+    [loadMovieById, applySynopsisResults]
   );
 
   const handleSelectRecommendation = useCallback(async (entry) => {
@@ -188,7 +240,10 @@ export default function App() {
 
     setLoading(true);
     setError(null);
+    setInlineStatusMessage(null);
+
     try {
+      setLoadingStage("spotlight");
       const details = await getMovieDetails(movieId);
       setSelectedMovie(normalizeSourceMovie(details));
       document.getElementById("spotlight")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -196,8 +251,16 @@ export default function App() {
       setSelectedMovie(entry.movie);
     } finally {
       setLoading(false);
+      setLoadingStage(null);
+      setInlineStatusMessage(null);
     }
   }, []);
+
+  if (isBooting) {
+    return <LoadingScreen message={bootMessage} />;
+  }
+
+  const showInlineStatus = loading && (loadingStage || inlineStatusMessage);
 
   return (
     <div className="app">
@@ -216,7 +279,7 @@ export default function App() {
               <div className="wake-banner">
                 {recommenderReady === false
                   ? "Acordando o motor BERT no Render (pode levar ~30s na primeira busca)…"
-                  : "Recommender API is waking up. Retrying may help…"}
+                  : "O modelo BERT no Render está acordando — tente buscar de novo em alguns segundos."}
               </div>
             )}
             {error && <div className="error-banner">{error}</div>}
@@ -227,14 +290,9 @@ export default function App() {
           movie={selectedMovie}
           semanticScore={selectedScore}
           loading={loading && !selectedMovie}
+          loadingStage={showInlineStatus ? loadingStage : null}
+          inlineStatusMessage={showInlineStatus ? inlineStatusMessage : null}
         />
-
-        {loading && selectedMovie && (
-          <div className="page-loading page-container" aria-live="polite">
-            <Loader2 size={22} className="spin" />
-            <span>Updating recommendations…</span>
-          </div>
-        )}
 
         <div className={clsx("page-stream", loading && "page-stream--dimmed")}>
           <RecommendationGrid
@@ -243,6 +301,8 @@ export default function App() {
             onSelect={handleSelectRecommendation}
             usedTmdbFallback={usedTmdbFallback}
             loading={loading}
+            loadingStage={showInlineStatus ? loadingStage : null}
+            inlineStatusMessage={showInlineStatus ? inlineStatusMessage : null}
           />
 
           <EngineSection />

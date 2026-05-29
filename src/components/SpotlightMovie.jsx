@@ -4,6 +4,7 @@ import { getPosterUrl } from "../utils/movieFallbacks.js";
 import { buildYouTubeWatchUrl, resolveTrailerKey } from "../utils/youtube.js";
 import ScoreStrip from "./ScoreStrip.jsx";
 import CastMember from "./spotlight/CastMember.jsx";
+import InlineLoadingStatus from "./InlineLoadingStatus.jsx";
 
 function resolveCast(movie) {
   if (!movie) return [];
@@ -199,13 +200,35 @@ function FilledSpotlight({ movie, semanticScore }) {
   );
 }
 
-export default function SpotlightMovie({ movie, semanticScore, loading }) {
+export default function SpotlightMovie({
+  movie,
+  semanticScore,
+  loading,
+  loadingStage,
+  inlineStatusMessage,
+}) {
+  const showStatus = Boolean(loadingStage || inlineStatusMessage);
+
   if (loading) {
-    return <SpotlightSkeleton />;
+    return (
+      <section id="spotlight" className="spotlight-section" aria-label="Featured spotlight">
+        {showStatus && (
+          <div className="spotlight-loading-bar">
+            <InlineLoadingStatus stage={loadingStage} message={inlineStatusMessage} />
+          </div>
+        )}
+        <SpotlightSkeleton />
+      </section>
+    );
   }
 
   return (
     <section id="spotlight" className="spotlight-section" aria-label="Featured spotlight">
+      {showStatus && (
+        <div className="spotlight-loading-bar">
+          <InlineLoadingStatus stage={loadingStage} message={inlineStatusMessage} />
+        </div>
+      )}
       {!movie ? <EmptySpotlight /> : <FilledSpotlight movie={movie} semanticScore={semanticScore} />}
     </section>
   );

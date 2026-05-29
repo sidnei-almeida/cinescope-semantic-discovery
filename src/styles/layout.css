@@ -1890,11 +1890,22 @@
 
 .engine-strip-header p {
   margin: 0;
-  max-width: 320px;
+  max-width: 420px;
   color: var(--text-muted);
   font-family: var(--font-ui);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.engine-render-link {
+  color: var(--gold-champagne);
+  text-decoration: underline;
+  text-decoration-color: rgba(215, 178, 90, 0.35);
+  text-underline-offset: 3px;
+}
+
+.engine-render-link:hover {
+  color: var(--accent-gold);
 }
 
 .engine-pipeline {
@@ -2189,6 +2200,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.api-console-note {
+  margin: 0;
+  padding: 10px 18px 0;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.api-console-note code {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gold-champagne);
 }
 
 .api-console-body {

@@ -4,6 +4,7 @@ import clsx from "clsx";
 import MovieCard from "./MovieCard.jsx";
 import RecommendationSkeleton from "./RecommendationSkeleton.jsx";
 import SortSelect from "./SortSelect.jsx";
+import InlineLoadingStatus from "./InlineLoadingStatus.jsx";
 import {
   filterRecommendations,
   sortRecommendations,
@@ -31,6 +32,8 @@ export default function RecommendationGrid({
   onSelect,
   usedTmdbFallback,
   loading,
+  loadingStage,
+  inlineStatusMessage,
 }) {
   const [titleFilter, setTitleFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -75,6 +78,12 @@ export default function RecommendationGrid({
 
   return (
     <section className="recommendations-section" id="movies">
+      {(loadingStage || inlineStatusMessage) && (
+        <div className="recommendations-loading-bar">
+          <InlineLoadingStatus stage={loadingStage} message={inlineStatusMessage} />
+        </div>
+      )}
+
       <div className="recommendations-header">
         <div className="recommendations-header__lead">
           <h2>Recommended For You</h2>

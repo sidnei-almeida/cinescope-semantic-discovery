@@ -1,6 +1,8 @@
+import { SEMANTIC_MODEL_SERVICE_URL } from "../config/constants.js";
+
 const PIPELINE_STEPS = [
   "Query",
-  "Semantic Search",
+  "BERT on Render",
   "TMDb Enrichment",
   "Ranked Results",
 ];
@@ -11,7 +13,18 @@ export default function EngineSection() {
       <div className="engine-strip">
         <div className="engine-strip-header">
           <span className="section-eyebrow">CineScope Engine</span>
-          <p>From natural language intent to ranked movie discovery.</p>
+          <p>
+            Natural-language intent → semantic retrieval on{" "}
+            <a
+              className="engine-render-link"
+              href={SEMANTIC_MODEL_SERVICE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Render
+            </a>{" "}
+            → TMDb enrichment → ranked shelf.
+          </p>
         </div>
 
         <div className="engine-pipeline" aria-label="CineScope recommendation pipeline">

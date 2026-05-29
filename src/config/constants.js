@@ -7,36 +7,39 @@ export const BACKDROP_SIZE = "w780";
 export const THUMB_SIZE = "w185";
 export const YOUTUBE_BASE_EMBED = "https://www.youtube.com/embed";
 
-const RENDER_RECOMMENDER_URL = "https://tmdb-semantic-recommender.onrender.com";
+/**
+ * API semântica em produção (FastAPI + BERT + Annoy no Render).
+ * Este é o backend do portfólio — não foi removido nem substituído.
+ */
+export const SEMANTIC_MODEL_SERVICE_URL =
+  "https://tmdb-semantic-recommender.onrender.com";
+
+/** Caminho no browser; Vite/Vercel repassam para SEMANTIC_MODEL_SERVICE_URL (só evita CORS). */
+export const RECOMMENDER_PROXY_PATH = "/recommender";
 
 /**
- * Em dev, o Vite faz proxy de /recommender → Render (mesma origin, sem CORS no browser).
- * Firefox costuma reportar "CORS request did not succeed" quando a conexão falha (cold start).
+ * Browser → /recommender → proxy → Render (SEMANTIC_MODEL_SERVICE_URL).
+ * O modelo continua rodando no Render; o proxy é um túnel HTTP, não um fallback.
  */
 function resolveRecommenderBaseUrl() {
   const envUrl = import.meta.env.VITE_RECOMMENDER_API_URL?.trim();
+  const useDirect =
+    import.meta.env.VITE_RECOMMENDER_DIRECT === "true" ||
+    import.meta.env.VITE_RECOMMENDER_DIRECT === "1";
 
-  if (import.meta.env.DEV) {
-    const useDirect =
-      import.meta.env.VITE_RECOMMENDER_DIRECT === "true" ||
-      import.meta.env.VITE_RECOMMENDER_DIRECT === "1";
-
-    if (useDirect && envUrl) {
-      return envUrl.replace(/\/$/, "");
-    }
-
-    if (
-      !envUrl ||
-      envUrl === "/recommender" ||
-      envUrl.includes("onrender.com")
-    ) {
-      return "/recommender";
-    }
-
+  if (useDirect && envUrl) {
     return envUrl.replace(/\/$/, "");
   }
 
-  return (envUrl || RENDER_RECOMMENDER_URL).replace(/\/$/, "");
+  if (
+    !envUrl ||
+    envUrl === RECOMMENDER_PROXY_PATH ||
+    envUrl.includes("onrender.com")
+  ) {
+    return RECOMMENDER_PROXY_PATH;
+  }
+
+  return envUrl.replace(/\/$/, "");
 }
 
 export const RECOMMENDER_BASE_URL = resolveRecommenderBaseUrl();

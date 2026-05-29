@@ -17,7 +17,8 @@ export default function TechnicalSection() {
           <span className="technical-eyebrow">For Developers</span>
           <h2 className="technical-title">Built for semantic movie discovery</h2>
           <p className="technical-lead">
-            Production-ready retrieval with hybrid re-ranking on the client.
+            Semantic recommendations are served by the FastAPI recommender on Render
+            (BERT embeddings + Annoy). This frontend enriches and ranks results with TMDb.
           </p>
 
           <div className="tech-stack-grid">

@@ -149,8 +149,7 @@ Built for a **premium noir** mood: warm blacks, graphite cards, champagne gold a
 Copy `.env.example` to `.env` (local only — **never commit** `.env`):
 
 ```env
-# Dev: leave empty → Vite proxy /recommender (avoids CORS)
-# Production (Vercel): set full Render URL
+# Leave empty — dev (Vite) and Vercel use same-origin proxy /recommender
 VITE_RECOMMENDER_API_URL=
 
 VITE_TMDB_API_KEY=
@@ -160,8 +159,8 @@ VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_RECOMMENDER_API_URL` | Semantic API base URL. **Dev:** empty uses `/recommender` proxy. **Prod:** `https://tmdb-semantic-recommender.onrender.com` |
-| `VITE_RECOMMENDER_DIRECT` | `true` to bypass proxy in dev (may hit CORS on cold start) |
+| `VITE_RECOMMENDER_API_URL` | Optional override. **Leave empty** — app uses `/recommender` (Vite + Vercel rewrite, no CORS) |
+| `VITE_RECOMMENDER_DIRECT` | `true` + full API URL only if your backend allows browser CORS |
 | `VITE_TMDB_API_KEY` | TMDb API key — posters, cast, trailers, metadata |
 | `VITE_TMDB_READ_TOKEN` | Optional Bearer token instead of API key |
 | `VITE_TMDB_IMAGE_BASE_URL` | Image CDN (default TMDb) |
@@ -199,11 +198,11 @@ npm run preview
 2. Framework preset: **Vite**
 3. Build command: `npm run build` · Output directory: `dist`
 4. Environment variables (Production):
-   - `VITE_RECOMMENDER_API_URL` = `https://tmdb-semantic-recommender.onrender.com`
    - `VITE_TMDB_API_KEY` = your TMDb key
+   - **Do not** set `VITE_RECOMMENDER_API_URL` to the Render URL (browser CORS will block it).
 5. Deploy.
 
-The dev server proxies `/recommender` → Render via `vite.config.js`; in production the browser calls the URLs from env directly.
+`vercel.json` rewrites `/recommender/*` → Render; `vite.config.js` does the same in dev.
 
 ---
 
