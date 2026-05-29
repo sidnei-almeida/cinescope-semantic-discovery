@@ -1,0 +1,63 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+
+body,
+.app {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(215, 178, 90, 0.055), transparent 32%),
+    linear-gradient(180deg, #090908 0%, #060605 100%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button,
+input {
+  font: inherit;
+  font-family: var(--font-ui);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--accent-gold-light);
+}
+
+a:hover {
+  color: var(--accent-gold);
+}
+
+::selection {
+  background: rgba(215, 178, 90, 0.35);
+  color: #fff;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--font-mono);
+}

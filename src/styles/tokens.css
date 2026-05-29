@@ -1,0 +1,112 @@
+:root {
+  color-scheme: dark;
+
+  /* Typography */
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: var(--font-ui);
+
+  /* Backgrounds — warm noir / graphite */
+  --bg-app: #070706;
+  --bg-page: #090908;
+  --bg-elevated: #10100e;
+  --bg-panel: #141310;
+  --bg-card: #171611;
+  --bg-card-soft: #1d1b16;
+  --bg-input: rgba(18, 17, 14, 0.78);
+
+  /* Warm grayscale text */
+  --text-primary: #f4efe2;
+  --text-secondary: #d2cab8;
+  --text-muted: #9d9586;
+  --text-faint: #6f675b;
+
+  /* Gold / champagne */
+  --accent-gold: #d7b25a;
+  --accent-gold-light: #f2dfb2;
+  --accent-gold-soft: rgba(215, 178, 90, 0.14);
+  --accent-gold-border: rgba(215, 178, 90, 0.34);
+  --accent-gold-strong: #c99a2e;
+
+  /* Borders */
+  --border-subtle: rgba(244, 239, 226, 0.08);
+  --border-medium: rgba(244, 239, 226, 0.14);
+  --border-gold: rgba(215, 178, 90, 0.26);
+
+  /* Status */
+  --success: #8fbf72;
+  --success-soft: rgba(143, 191, 114, 0.12);
+  --color-warning: #e1bd5d;
+  --color-error: #e8a0a0;
+
+  /* Shadows */
+  --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.38);
+  --shadow-card: 0 16px 42px rgba(0, 0, 0, 0.32);
+
+  /* ── Legacy aliases (layout/components) ── */
+  --color-bg: var(--bg-page);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-card: var(--bg-card);
+  --color-bg-shell: var(--bg-panel);
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-faint);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent-gold);
+  --color-accent-soft: var(--accent-gold-light);
+  --color-accent-muted: var(--accent-gold-strong);
+  --color-border: var(--border-subtle);
+  --color-border-strong: var(--border-gold);
+  --color-success: var(--success);
+
+  --gold: var(--accent-gold);
+  --gold-bright: var(--accent-gold-light);
+  --gold-champagne: var(--accent-gold-light);
+  --gold-muted: var(--accent-gold);
+  --gold-dim: rgba(215, 178, 90, 0.88);
+  --gold-border: var(--border-gold);
+  --gold-border-strong: var(--accent-gold-border);
+  --gold-border-subtle: rgba(215, 178, 90, 0.12);
+  --gold-glow: rgba(215, 178, 90, 0.08);
+  --gold-fill-soft: var(--accent-gold-soft);
+  --gold-fill: rgba(215, 178, 90, 0.12);
+
+  /* Gradients — warm only */
+  --gradient-gold: linear-gradient(180deg, #e1bd5d 0%, #c4962d 100%);
+  --gradient-gold-text: linear-gradient(135deg, #fffbea 0%, #f6edcf 52%, #d7b25a 100%);
+  --gradient-gold-hero-title: linear-gradient(
+    180deg,
+    #fffbea 0%,
+    #f6edcf 52%,
+    #ead9a7 82%,
+    #c2a04b 100%
+  );
+  --gradient-gold-border-h: linear-gradient(
+    90deg,
+    #6b5220 0%,
+    #9a7628 22%,
+    #c99a2e 48%,
+    #e8c96a 78%,
+    #f5e6c8 100%
+  );
+  --gradient-gold-icon: linear-gradient(135deg, #8a6d2b 0%, #d7b25a 45%, #f5e6c8 100%);
+  --gradient-shell: linear-gradient(
+    180deg,
+    rgba(20, 19, 16, 0.88) 0%,
+    rgba(10, 10, 8, 0.92) 100%
+  );
+  --gradient-card: linear-gradient(
+    180deg,
+    rgba(20, 19, 16, 0.88) 0%,
+    rgba(10, 10, 8, 0.92) 100%
+  );
+
+  --shadow-gold: 0 10px 28px rgba(215, 178, 90, 0.16);
+  --shadow-gold-soft: 0 0 32px rgba(215, 178, 90, 0.08);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --content-max: 1180px;
+}
