@@ -3,11 +3,10 @@ import { Search, Bookmark, Menu, X } from "lucide-react";
 import clsx from "clsx";
 
 const NAV_LINKS = [
-  { label: "Discover", href: "#discover", active: true },
-  { label: "Movies", href: "#movies" },
-  { label: "People", href: "#people" },
-  { label: "Collections", href: "#collections" },
-  { label: "Lists", href: "#lists" },
+  { label: "Discover", href: "#discover" },
+  { label: "Model", href: "#model" },
+  { label: "Data", href: "#data" },
+  { label: "Workflow", href: "#workflow" },
   { label: "About", href: "#about" },
 ];
 
@@ -27,7 +26,6 @@ export default function Header({ onSearchFocus }) {
             <a
               key={link.label}
               href={link.href}
-              className={clsx(link.active && "active")}
               onClick={() => setMobileOpen(false)}
             >
               {link.label}

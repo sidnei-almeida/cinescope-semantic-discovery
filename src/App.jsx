@@ -5,6 +5,9 @@ import HeroSection from "./components/HeroSection.jsx";
 import SpotlightMovie from "./components/SpotlightMovie.jsx";
 import RecommendationGrid from "./components/RecommendationGrid.jsx";
 import EngineSection from "./components/EngineSection.jsx";
+import ModelSection from "./components/ModelSection.jsx";
+import DataSection from "./components/DataSection.jsx";
+import AboutSection from "./components/AboutSection.jsx";
 import TechnicalSection from "./components/TechnicalSection.jsx";
 import Footer from "./components/Footer.jsx";
 import LoadingScreen from "./components/LoadingScreen.jsx";
@@ -305,10 +308,13 @@ export default function App() {
             inlineStatusMessage={showInlineStatus ? inlineStatusMessage : null}
           />
 
+          <ModelSection />
+          <DataSection />
           <EngineSection />
         </div>
 
         <TechnicalSection />
+        <AboutSection />
       </main>
 
       <Footer />

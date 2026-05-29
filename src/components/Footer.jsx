@@ -1,5 +1,4 @@
-const PORTFOLIO_URL = "https://sidnei-almeida.github.io";
-const GITHUB_URL = "https://github.com/sidnei-almeida";
+import { GITHUB_REPO_URL, PORTFOLIO_URL } from "../config/siteLinks.js";
 
 export default function Footer() {
   return (
@@ -24,7 +23,7 @@ export default function Footer() {
           <a href={PORTFOLIO_URL} target="_blank" rel="noreferrer">
             Portfolio
           </a>
-          <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+          <a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer">
             GitHub
           </a>
         </div>
