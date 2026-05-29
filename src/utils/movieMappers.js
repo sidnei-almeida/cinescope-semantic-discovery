@@ -6,7 +6,7 @@ import {
   getBackdropUrl,
   pickTrailerKey,
 } from "./movieFallbacks.js";
-import { buildYouTubeEmbedUrl } from "./youtube.js";
+import { buildYouTubeWatchUrl } from "./youtube.js";
 import { buildTmdbImageUrl } from "../services/tmdbApi.js";
 import { safeValue } from "./safeValue.js";
 import { attachRecommendationSource } from "./recommendationSource.js";
@@ -94,7 +94,7 @@ export function normalizeTmdbMovie({ base, details, credits, videos }) {
     cast,
     trailer,
     trailerKey: trailer?.key ?? null,
-    trailerUrl: trailer?.key ? buildYouTubeEmbedUrl(trailer.key) : null,
+    trailerUrl: trailer?.key ? buildYouTubeWatchUrl(trailer.key) : null,
     similarityScore: base.similarityScore,
     raw: base.raw,
   };
@@ -278,7 +278,7 @@ export function mapTmdbMovieToInternal(details, options = {}) {
     directors,
     writers,
     trailerKey: trailerKey ?? null,
-    trailerUrl: trailerKey ? buildYouTubeEmbedUrl(trailerKey) : null,
+    trailerUrl: trailerKey ? buildYouTubeWatchUrl(trailerKey) : null,
     keywords: (details.keywords?.keywords ?? []).map((kw) => kw.name),
     imdbId:
       details.external_ids?.imdb_id ??

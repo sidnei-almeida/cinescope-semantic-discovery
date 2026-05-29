@@ -4,7 +4,6 @@ import { getPosterUrl } from "../utils/movieFallbacks.js";
 import { buildYouTubeWatchUrl, resolveTrailerKey } from "../utils/youtube.js";
 import ScoreStrip from "./ScoreStrip.jsx";
 import CastMember from "./spotlight/CastMember.jsx";
-import YouTubeTrailerEmbed from "./YouTubeTrailerEmbed.jsx";
 
 function resolveCast(movie) {
   if (!movie) return [];
@@ -159,13 +158,6 @@ function FilledSpotlight({ movie, semanticScore }) {
         <p className="spotlight-overview">{movie.overview}</p>
 
         <ScoreStrip movie={movie} semanticScore={semanticScore} />
-
-        {trailerKey ? (
-          <YouTubeTrailerEmbed
-            videoKey={trailerKey}
-            title={`${movie.title} trailer`}
-          />
-        ) : null}
       </div>
 
       <aside className="spotlight-cast-panel">
