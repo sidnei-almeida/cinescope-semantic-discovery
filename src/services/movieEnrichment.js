@@ -46,7 +46,7 @@ import {
 import { getPosterUrl, getBackdropUrl } from "../utils/movieFallbacks.js";
 import { devLog } from "../utils/devLog.js";
 
-const RECOMMENDER_FETCH_TOP_K = 12;
+const RECOMMENDER_FETCH_TOP_K = 20;
 
 function collectExcludeIds(...values) {
   const exclude = new Set();

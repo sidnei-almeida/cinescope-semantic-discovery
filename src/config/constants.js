@@ -49,10 +49,10 @@ export const LONG_REQUEST_TIMEOUT_MS = 22000;
 /** Render free tier pode levar 20–50s no cold start; 8s causava fallback TMDb sempre. */
 export const BERT_API_TIMEOUT_MS = 28000;
 export const MAX_RECOMMENDATIONS = 50;
-/** Cards exibidos na shelf (híbrido: até 10 semânticos + até 20 TMDb). */
-export const SEMANTIC_MERGE_TOP = 10;
+/** Cards exibidos na shelf (híbrido: até 20 semânticos + até 20 TMDb). */
+export const SEMANTIC_MERGE_TOP = 20;
 export const TMDB_COMPLEMENT_TOP = 20;
-export const TOP_N_DISPLAY = 30;
+export const TOP_N_DISPLAY = 40;
 
 /** Filme carregado automaticamente ao abrir o site. */
 export const DEFAULT_SPOTLIGHT_QUERY = "Frankenstein";

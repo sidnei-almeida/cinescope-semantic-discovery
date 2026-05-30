@@ -1,6 +1,8 @@
 import { DATA_FEATURES, TECH_METRICS } from "../config/projectFacts.js";
-import InfoFeatureGrid from "./info/InfoFeatureGrid.jsx";
+import InfoDetailList from "./info/InfoDetailList.jsx";
 import InfoMetricStrip from "./info/InfoMetricStrip.jsx";
+
+const DATA_METRICS = [TECH_METRICS[5], TECH_METRICS[3]];
 
 export default function DataSection() {
   return (
@@ -21,11 +23,8 @@ export default function DataSection() {
         replacing the semantic model as the primary retrieval engine.
       </p>
 
-      <InfoFeatureGrid items={DATA_FEATURES} columns={2} />
-      <InfoMetricStrip
-        metrics={[TECH_METRICS[5], TECH_METRICS[3]]}
-        className="info-metric-strip--compact"
-      />
+      <InfoDetailList items={DATA_FEATURES} />
+      <InfoMetricStrip metrics={DATA_METRICS} minimal />
       <p className="info-section-note">
         Movie metadata and imagery are provided through TMDb.
       </p>

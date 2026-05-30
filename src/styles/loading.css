@@ -8,7 +8,7 @@
   place-items: center;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 38%, rgba(215, 178, 90, 0.1), transparent 32%),
+    radial-gradient(circle at 50% 42%, rgba(215, 178, 90, 0.08), transparent 28%),
     linear-gradient(180deg, #090908 0%, #050504 100%);
   color: var(--text-primary);
 }
@@ -16,41 +16,36 @@
 .loading-content {
   position: relative;
   z-index: 2;
-  width: min(720px, calc(100% - 48px));
+  width: min(380px, calc(100% - 40px));
   text-align: center;
-  animation: loadingContentEnter 900ms var(--ease-out-soft, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation: loadingContentEnter 700ms var(--ease-out-soft, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
-.loading-logo {
+.loading-brand {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin-bottom: 22px;
-  color: var(--accent-gold-light);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
+  margin-bottom: 10px;
 }
 
 .loading-logo-img {
   flex-shrink: 0;
-  opacity: 0.92;
-  filter: drop-shadow(0 0 14px rgba(215, 178, 90, 0.22));
+  opacity: 0.9;
+  filter: drop-shadow(0 0 10px rgba(215, 178, 90, 0.2));
 }
 
-.loading-content h1 {
+.loading-brand h1 {
   margin: 0;
   font-family: var(--font-display, Georgia, serif);
-  font-size: clamp(46px, 7vw, 92px);
-  line-height: 0.95;
+  font-size: clamp(22px, 4.2vw, 30px);
+  line-height: 1.05;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   background: linear-gradient(
     180deg,
     #fffbea 0%,
-    #f6edcf 52%,
-    #ead9a7 82%,
+    #f6edcf 55%,
     #c2a04b 100%
   );
   -webkit-background-clip: text;
@@ -59,70 +54,95 @@
 }
 
 .loading-message {
-  margin: 22px 0 0;
+  margin: 12px 0 0;
   color: var(--text-muted);
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  min-height: 1.4em;
-  transition: opacity 0.35s ease;
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: 0.03em;
+  min-height: 2.9em;
+  max-width: 28ch;
+  margin-left: auto;
+  margin-right: auto;
+  transition: opacity 0.3s ease;
 }
 
 .loading-ornament {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  margin-top: 24px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .loading-ornament span {
-  width: 96px;
+  width: 56px;
   height: 1px;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(215, 178, 90, 0.52),
+    rgba(215, 178, 90, 0.45),
     transparent
   );
   transform-origin: center;
-  animation: ornamentReveal 900ms ease-out 260ms both;
+  animation: ornamentReveal 700ms ease-out 200ms both;
 }
 
 .loading-ornament i {
   color: var(--accent-gold);
   font-style: normal;
-  font-size: 14px;
+  font-size: 11px;
   animation: loadingStarPulse 3s ease-in-out infinite;
 }
 
 .loading-progress {
   position: relative;
-  width: min(360px, 72vw);
+  width: min(220px, 58vw);
   height: 2px;
-  margin: 28px auto 0;
+  margin: 16px auto 0;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(244, 239, 226, 0.1);
+  background: rgba(244, 239, 226, 0.08);
 }
 
 .loading-progress span {
   position: absolute;
   inset: 0 auto 0 0;
-  width: 42%;
+  width: 38%;
   border-radius: inherit;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(215, 178, 90, 0.95),
+    rgba(215, 178, 90, 0.9),
     transparent
   );
-  animation: loadingProgressSweep 1.45s ease-in-out infinite;
+  animation: loadingProgressSweep 1.35s ease-in-out infinite;
+}
+
+.loading-retry-btn {
+  margin-top: 14px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(215, 178, 90, 0.28);
+  background: rgba(12, 11, 9, 0.7);
+  color: var(--gold-champagne);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.loading-retry-btn:hover {
+  border-color: rgba(215, 178, 90, 0.5);
+  color: var(--accent-gold);
 }
 
 .loading-grain {
   position: absolute;
   inset: 0;
-  opacity: 0.1;
+  opacity: 0.08;
   pointer-events: none;
   background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
   background-size: 3px 3px;
@@ -136,13 +156,13 @@
   background: conic-gradient(
     from 90deg at 50% 50%,
     transparent 0deg,
-    rgba(215, 178, 90, 0.045) 24deg,
+    rgba(215, 178, 90, 0.035) 24deg,
     transparent 48deg,
     transparent 360deg
   );
   filter: blur(16px);
-  opacity: 0.65;
-  animation: projectorSweep 8s linear infinite;
+  opacity: 0.55;
+  animation: projectorSweep 10s linear infinite;
 }
 
 /* ─── Inline search / enrichment status ─── */
@@ -204,8 +224,8 @@
 @keyframes loadingContentEnter {
   from {
     opacity: 0;
-    transform: translateY(18px);
-    filter: blur(8px);
+    transform: translateY(10px);
+    filter: blur(6px);
   }
   to {
     opacity: 1;

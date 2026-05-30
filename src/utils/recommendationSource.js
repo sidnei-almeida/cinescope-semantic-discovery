@@ -18,8 +18,8 @@ export function getSourceLabel(movie) {
     movie?.recommendationSource || movie?.source
   );
 
-  if (source === "semantic_model") return "SEMANTIC";
-  if (source === "tmdb_fallback") return "TMDb";
+  if (source === "semantic_model") return "semantic";
+  if (source === "tmdb_fallback") return "tmdb";
 
   return null;
 }
@@ -29,8 +29,8 @@ export function getSourceClass(movie) {
     movie?.recommendationSource || movie?.source
   );
 
-  if (source === "semantic_model") return "source-badge-semantic";
-  if (source === "tmdb_fallback") return "source-badge-tmdb";
+  if (source === "semantic_model") return "badge-semantic";
+  if (source === "tmdb_fallback") return "badge-tmdb";
 
   return "";
 }

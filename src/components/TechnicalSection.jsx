@@ -1,6 +1,6 @@
 import ApiConsole from "./ApiConsole.jsx";
 
-const STACK = [
+const STACK_TAGS = [
   "BERT embeddings",
   "ONNX inference",
   "Annoy vector search",
@@ -21,16 +21,13 @@ export default function TechnicalSection() {
             (BERT embeddings + Annoy). This frontend enriches and ranks results with TMDb.
           </p>
 
-          <div className="tech-stack-grid">
-            {STACK.map((item) => (
-              <span key={item} className="tech-stack-chip">
-                {item}
-              </span>
-            ))}
+          <div className="technical-metric" aria-label="Approximate indexed library size">
+            <span className="technical-metric__value">~30,000</span>
+            <span className="technical-metric__label">movies indexed</span>
           </div>
         </div>
 
-        <ApiConsole />
+        <ApiConsole stackTags={STACK_TAGS} />
       </div>
     </section>
   );

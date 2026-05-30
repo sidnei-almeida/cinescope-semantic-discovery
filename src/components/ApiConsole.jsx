@@ -1,6 +1,6 @@
 import { SEMANTIC_MODEL_SERVICE_URL } from "../config/constants.js";
 
-export default function ApiConsole() {
+export default function ApiConsole({ stackTags = [] }) {
   const endpoint = `${SEMANTIC_MODEL_SERVICE_URL}/api/v1/recommend`;
 
   return (
@@ -27,6 +27,15 @@ export default function ApiConsole() {
   "title": "Inception",
   "top_k": 20
 }`}</pre>
+      {stackTags.length > 0 && (
+        <div className="api-console-tags" role="list" aria-label="Related technologies">
+          {stackTags.map((tag) => (
+            <span key={tag} className="dev-tag" role="listitem">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

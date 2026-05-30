@@ -167,13 +167,17 @@ export default function RecommendationGrid({
           )}
 
           {canShowMore && sortedMovies.length > 0 && (
-            <button
-              type="button"
-              className="show-more-button"
-              onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-            >
-              Show more
-            </button>
+            <div className="recommendations-show-more">
+              <span className="recommendations-show-more__line" aria-hidden="true" />
+              <button
+                type="button"
+                className="recommendations-show-more__btn"
+                onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+              >
+                Show more films
+              </button>
+              <span className="recommendations-show-more__line" aria-hidden="true" />
+            </div>
           )}
         </>
       ) : null}

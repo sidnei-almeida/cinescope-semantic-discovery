@@ -109,4 +109,8 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --content-max: 1180px;
+
+  /* Fixed header clearance */
+  --site-header-height: 80px;
+  --site-header-offset: calc(var(--site-header-height) + 16px);
 }

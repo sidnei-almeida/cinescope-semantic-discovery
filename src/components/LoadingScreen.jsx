@@ -2,6 +2,8 @@ import { LOADING_MESSAGES } from "../config/loadingMessages.js";
 
 export default function LoadingScreen({
   message = LOADING_MESSAGES.boot,
+  showRetry = false,
+  onRetry,
 }) {
   return (
     <div className="loading-screen" role="status" aria-live="polite" aria-busy="true">
@@ -9,18 +11,16 @@ export default function LoadingScreen({
       <div className="loading-projector" aria-hidden="true" />
 
       <div className="loading-content">
-        <div className="loading-logo">
+        <div className="loading-brand">
           <img
             className="loading-logo-img"
             src="/brand-projector.svg"
             alt=""
-            width={28}
-            height={28}
+            width={22}
+            height={22}
           />
-          <span>CineScope</span>
+          <h1>CineScope Intelligence</h1>
         </div>
-
-        <h1>CineScope Intelligence</h1>
 
         <div className="loading-ornament" aria-hidden="true">
           <span />
@@ -33,6 +33,12 @@ export default function LoadingScreen({
         <div className="loading-progress" aria-hidden="true">
           <span />
         </div>
+
+        {showRetry && (
+          <button type="button" className="loading-retry-btn" onClick={onRetry}>
+            Try again
+          </button>
+        )}
       </div>
     </div>
   );

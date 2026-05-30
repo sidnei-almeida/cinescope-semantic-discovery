@@ -4,7 +4,7 @@ import {
   MODEL_FEATURES,
   TECH_METRICS,
 } from "../config/projectFacts.js";
-import InfoFeatureGrid from "./info/InfoFeatureGrid.jsx";
+import InfoDetailList from "./info/InfoDetailList.jsx";
 import InfoMetricStrip from "./info/InfoMetricStrip.jsx";
 
 export default function ModelSection() {
@@ -28,8 +28,8 @@ export default function ModelSection() {
         universe.
       </p>
 
-      <InfoFeatureGrid items={MODEL_FEATURES} columns={2} />
-      <InfoMetricStrip metrics={TECH_METRICS.slice(0, 4)} className="info-metric-strip--compact" />
+      <InfoDetailList items={MODEL_FEATURES} />
+      <InfoMetricStrip metrics={TECH_METRICS.slice(0, 4)} minimal />
     </section>
   );
 }

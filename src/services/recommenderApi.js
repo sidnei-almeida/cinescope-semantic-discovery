@@ -265,13 +265,49 @@ export const buildRecommendRequestFromMovie = buildRecommendationPayloadFromMovi
 export async function checkRecommenderHealth(baseUrl = API_BASE_URL) {
   try {
     const response = await fetchWithTimeout(`${baseUrl}/health`, {}, 20000);
-    if (!response.ok) return { ok: false, modelLoaded: false };
+    if (!response.ok) return { ok: false, modelLoaded: false, statusCode: response.status };
     const data = await response.json();
+    const healthy = data.status === "healthy";
+    const modelLoaded = Boolean(data.model_loaded);
     return {
-      ok: data.status === "healthy",
-      modelLoaded: Boolean(data.model_loaded),
+      ok: healthy && modelLoaded,
+      modelLoaded,
+      healthy,
+      statusCode: response.status,
     };
   } catch {
-    return { ok: false, modelLoaded: false };
+    return { ok: false, modelLoaded: false, healthy: false, statusCode: null };
+  }
+}
+
+/**
+ * Polls /health until HTTP 200 + status healthy + model loaded (cold start on Render).
+ */
+export async function waitForRecommenderReady(options = {}) {
+  const {
+    baseUrl = API_BASE_URL,
+    pollIntervalMs = 2500,
+    requestTimeoutMs = 18000,
+    maxWaitMs = 180000,
+    signal,
+  } = options;
+
+  const started = Date.now();
+
+  while (true) {
+    if (signal?.aborted) {
+      return { ok: false, modelLoaded: false, aborted: true };
+    }
+
+    if (Date.now() - started > maxWaitMs) {
+      return { ok: false, modelLoaded: false, timedOut: true };
+    }
+
+    const health = await checkRecommenderHealth(baseUrl);
+    if (health.ok && health.statusCode === 200) {
+      return { ok: true, modelLoaded: true };
+    }
+
+    await sleep(pollIntervalMs);
   }
 }

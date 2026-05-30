@@ -1,50 +1,46 @@
 import { useState } from "react";
-import { Search, Bookmark, Menu, X } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import clsx from "clsx";
+import HeaderPageFind from "./HeaderPageFind.jsx";
 
 const NAV_LINKS = [
-  { label: "Discover", href: "#discover" },
-  { label: "Model", href: "#model" },
-  { label: "Data", href: "#data" },
-  { label: "Workflow", href: "#workflow" },
-  { label: "About", href: "#about" },
+  { label: "Discover", to: "/", end: true },
+  { label: "Model", to: "/model" },
+  { label: "Data", to: "/data" },
+  { label: "Workflow", to: "/workflow" },
+  { label: "About", to: "/about" },
 ];
 
-export default function Header({ onSearchFocus }) {
+export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="site-header">
       <div className="site-header__inner">
-        <a href="#discover" className="brand">
+        <NavLink to="/" end className="brand" onClick={() => setMobileOpen(false)}>
           <img src="/brand-projector.svg" alt="" className="brand-mark" width={32} height={32} />
           <span className="brand-name">CineScope Intelligence</span>
-        </a>
+        </NavLink>
 
         <nav className={clsx("main-nav", mobileOpen && "main-nav--open")} aria-label="Main">
           {NAV_LINKS.map((link) => (
-            <a
+            <NavLink
               key={link.label}
-              href={link.href}
+              to={link.to}
+              end={link.end}
+              className={({ isActive }) =>
+                clsx("nav-link", isActive && "nav-link--active")
+              }
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
-            </a>
+            </NavLink>
           ))}
         </nav>
 
         <div className="header-actions">
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label="Search"
-            onClick={onSearchFocus}
-          >
-            <Search size={18} className="icon-gold" />
-          </button>
-          <button type="button" className="icon-btn" aria-label="Watchlist">
-            <Bookmark size={18} className="icon-gold" />
-          </button>
+          <HeaderPageFind />
           <a
             href="https://sidnei-almeida.github.io"
             className="header-portfolio-btn"

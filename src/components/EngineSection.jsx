@@ -1,8 +1,7 @@
 import { SEMANTIC_MODEL_SERVICE_URL } from "../config/constants.js";
-import { API_ENDPOINT } from "../config/projectFacts.js";
-import { WORKFLOW_STEPS } from "../config/projectFacts.js";
+import { API_ENDPOINT, WORKFLOW_STEPS } from "../config/projectFacts.js";
 import { API_REPO_URL } from "../config/siteLinks.js";
-import InfoFeatureGrid from "./info/InfoFeatureGrid.jsx";
+import InfoDetailList from "./info/InfoDetailList.jsx";
 
 const PIPELINE_STEPS = [
   "Query",
@@ -14,7 +13,7 @@ const PIPELINE_STEPS = [
 
 export default function EngineSection() {
   return (
-    <section className="engine-section info-section--workflow" id="workflow">
+    <section className="engine-section" id="workflow">
       <div className="engine-strip">
         <div className="engine-strip-header">
           <span className="section-eyebrow">CineScope Engine</span>
@@ -66,7 +65,7 @@ export default function EngineSection() {
         </div>
       </div>
 
-      <InfoFeatureGrid items={WORKFLOW_STEPS} columns={3} />
+      <InfoDetailList items={WORKFLOW_STEPS} className="engine-detail-list" />
     </section>
   );
 }

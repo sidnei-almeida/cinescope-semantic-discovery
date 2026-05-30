@@ -14,6 +14,7 @@ html {
   color: var(--text-primary);
   background: var(--bg-page);
   scroll-behavior: smooth;
+  scroll-padding-top: var(--site-header-offset);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -63,8 +64,39 @@ a:hover {
   color: #fff;
 }
 
+::highlight(page-find) {
+  background-color: rgba(215, 178, 90, 0.28);
+  color: inherit;
+}
+
+::highlight(page-find-active) {
+  background-color: rgba(215, 178, 90, 0.48);
+  color: inherit;
+}
+
 code,
 pre,
 kbd {
   font-family: var(--font-mono);
+}
+
+.page-enter {
+  animation: fadeUp 0.3s ease forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
 }
