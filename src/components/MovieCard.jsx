@@ -67,7 +67,8 @@ export default function MovieCard({ entry, active, onSelect }) {
       </button>
 
       <div className="movie-card-body">
-        {sourceLabel && (
+        {/* Most results are semantic; only the TMDb complement is worth labelling. */}
+        {recSource === "tmdb_fallback" && sourceLabel && (
           <span className={clsx("movie-source-badge", sourceClass)}>
             {sourceLabel}
           </span>

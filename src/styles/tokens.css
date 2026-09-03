@@ -1,50 +1,108 @@
+/*
+ * CineScope design tokens.
+ *
+ * The look is a 1980s movie theatre reduced to its essentials: warm black
+ * paper, one champagne gold accent, hairline rules instead of boxes, and a
+ * serif display face against a neutral UI face. Gold is a highlight, not a
+ * finish — it appears on one element per view, never as a gradient wash.
+ */
 :root {
   color-scheme: dark;
 
-  /* Typography */
+  /* ── Type ───────────────────────────────────────────────────────────── */
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-sans: var(--font-ui);
 
-  /* Backgrounds — warm noir / graphite */
-  --bg-app: #070706;
-  --bg-page: #090908;
-  --bg-elevated: #10100e;
-  --bg-panel: #141310;
-  --bg-card: #171611;
-  --bg-card-soft: #1d1b16;
-  --bg-input: rgba(18, 17, 14, 0.78);
+  /* Modular scale, 1.25 ratio, fluid at the display end. */
+  --text-2xs: 0.6875rem;   /* 11px — eyebrows, badges */
+  --text-xs: 0.75rem;      /* 12px — meta, captions */
+  --text-sm: 0.8125rem;    /* 13px — dense UI */
+  --text-base: 0.9375rem;  /* 15px — body */
+  --text-md: 1.0625rem;    /* 17px — lead paragraphs */
+  --text-lg: 1.375rem;     /* 22px — card titles */
+  --text-xl: clamp(1.6rem, 2.2vw, 2rem);
+  --text-2xl: clamp(2rem, 3.4vw, 2.75rem);
+  --text-3xl: clamp(2.6rem, 5vw, 4rem);
 
-  /* Warm grayscale text */
-  --text-primary: #f4efe2;
-  --text-secondary: #d2cab8;
-  --text-muted: #9d9586;
-  --text-faint: #6f675b;
+  --tracking-eyebrow: 0.18em;
+  --tracking-tight: -0.015em;
 
-  /* Gold / champagne */
-  --accent-gold: #d7b25a;
-  --accent-gold-light: #f2dfb2;
-  --accent-gold-soft: rgba(215, 178, 90, 0.14);
-  --accent-gold-border: rgba(215, 178, 90, 0.34);
-  --accent-gold-strong: #c99a2e;
+  /* Comfortable reading measure for long-form copy. */
+  --measure: 66ch;
+  --measure-tight: 52ch;
 
-  /* Borders */
-  --border-subtle: rgba(244, 239, 226, 0.08);
-  --border-medium: rgba(244, 239, 226, 0.14);
-  --border-gold: rgba(215, 178, 90, 0.26);
+  /* ── Space ──────────────────────────────────────────────────────────── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.75rem;
+  --space-8: 3.5rem;
+  --space-9: 4.5rem;
+  --space-10: 6rem;
 
-  /* Status */
+  /** Vertical rhythm between top-level page sections. */
+  --section-gap: clamp(3.5rem, 7vw, 6rem);
+
+  /* ── Surfaces ───────────────────────────────────────────────────────── */
+  --bg-app: #080807;
+  --bg-page: #0a0a09;
+  --bg-elevated: #101010;
+  --bg-panel: #121211;
+  --bg-card: #141413;
+  --bg-card-soft: #1a1a18;
+  --bg-input: rgba(20, 20, 19, 0.72);
+
+  /* ── Ink ────────────────────────────────────────────────────────────── */
+  --text-primary: #f2ede1;
+  --text-secondary: #c9c2b3;
+  --text-muted: #948d80;
+  --text-faint: #6a645a;
+
+  /* ── Accent ─────────────────────────────────────────────────────────── */
+  --accent-gold: #d8b463;
+  --accent-gold-light: #edd9a6;
+  --accent-gold-strong: #c09230;
+  --accent-gold-soft: rgba(216, 180, 99, 0.1);
+  --accent-gold-border: rgba(216, 180, 99, 0.3);
+
+  /* ── Lines ──────────────────────────────────────────────────────────── */
+  --border-subtle: rgba(242, 237, 225, 0.07);
+  --border-medium: rgba(242, 237, 225, 0.13);
+  --border-gold: rgba(216, 180, 99, 0.22);
+  /** The default hairline. Sections are separated by rules, not by boxes. */
+  --rule: 1px solid var(--border-subtle);
+
+  /* ── Status ─────────────────────────────────────────────────────────── */
   --success: #8fbf72;
   --success-soft: rgba(143, 191, 114, 0.12);
-  --color-warning: #e1bd5d;
-  --color-error: #e8a0a0;
+  --color-warning: #dbb75c;
+  --color-error: #e19b9b;
 
-  /* Shadows */
-  --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.38);
-  --shadow-card: 0 16px 42px rgba(0, 0, 0, 0.32);
+  /* ── Depth ──────────────────────────────────────────────────────────── */
+  --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.32);
+  --shadow-lifted: 0 20px 56px rgba(0, 0, 0, 0.5);
 
-  /* ── Legacy aliases (layout/components) ── */
+  /* ── Shape ──────────────────────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --content-max: 1180px;
+  --site-header-height: 72px;
+  --site-header-offset: calc(var(--site-header-height) + 16px);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+
+  /* ── Legacy aliases ─────────────────────────────────────────────────── */
   --color-bg: var(--bg-page);
   --color-bg-elevated: var(--bg-elevated);
   --color-bg-card: var(--bg-card);
@@ -64,53 +122,29 @@
   --gold-bright: var(--accent-gold-light);
   --gold-champagne: var(--accent-gold-light);
   --gold-muted: var(--accent-gold);
-  --gold-dim: rgba(215, 178, 90, 0.88);
+  --gold-dim: rgba(216, 180, 99, 0.82);
   --gold-border: var(--border-gold);
   --gold-border-strong: var(--accent-gold-border);
-  --gold-border-subtle: rgba(215, 178, 90, 0.12);
-  --gold-glow: rgba(215, 178, 90, 0.08);
+  --gold-border-subtle: rgba(216, 180, 99, 0.1);
+  --gold-glow: rgba(216, 180, 99, 0.06);
   --gold-fill-soft: var(--accent-gold-soft);
-  --gold-fill: rgba(215, 178, 90, 0.12);
+  --gold-fill: rgba(216, 180, 99, 0.1);
 
-  /* Gradients — warm only */
-  --gradient-gold: linear-gradient(180deg, #e1bd5d 0%, #c4962d 100%);
-  --gradient-gold-text: linear-gradient(135deg, #fffbea 0%, #f6edcf 52%, #d7b25a 100%);
-  --gradient-gold-hero-title: linear-gradient(
-    180deg,
-    #fffbea 0%,
-    #f6edcf 52%,
-    #ead9a7 82%,
-    #c2a04b 100%
-  );
+  /* Flat fills replace the old multi-stop washes; only the title keeps a
+     gradient, and a shallow one, so gold reads as metal rather than neon. */
+  --gradient-gold: linear-gradient(180deg, #e2c377 0%, #bd8f2e 100%);
+  --gradient-gold-text: linear-gradient(135deg, #fbf3dd 0%, #e8d5a4 100%);
+  --gradient-gold-hero-title: linear-gradient(180deg, #fbf5e4 0%, #e9d7a8 62%, #c8a45a 100%);
   --gradient-gold-border-h: linear-gradient(
     90deg,
-    #6b5220 0%,
-    #9a7628 22%,
-    #c99a2e 48%,
-    #e8c96a 78%,
-    #f5e6c8 100%
+    transparent 0%,
+    rgba(216, 180, 99, 0.5) 50%,
+    transparent 100%
   );
-  --gradient-gold-icon: linear-gradient(135deg, #8a6d2b 0%, #d7b25a 45%, #f5e6c8 100%);
-  --gradient-shell: linear-gradient(
-    180deg,
-    rgba(20, 19, 16, 0.88) 0%,
-    rgba(10, 10, 8, 0.92) 100%
-  );
-  --gradient-card: linear-gradient(
-    180deg,
-    rgba(20, 19, 16, 0.88) 0%,
-    rgba(10, 10, 8, 0.92) 100%
-  );
+  --gradient-gold-icon: linear-gradient(135deg, #9b7a2f 0%, #d8b463 50%, #f0e2bd 100%);
+  --gradient-shell: var(--bg-panel);
+  --gradient-card: var(--bg-card);
 
-  --shadow-gold: 0 10px 28px rgba(215, 178, 90, 0.16);
-  --shadow-gold-soft: 0 0 32px rgba(215, 178, 90, 0.08);
-
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --content-max: 1180px;
-
-  /* Fixed header clearance */
-  --site-header-height: 80px;
-  --site-header-offset: calc(var(--site-header-height) + 16px);
+  --shadow-gold: 0 8px 24px rgba(216, 180, 99, 0.12);
+  --shadow-gold-soft: 0 0 24px rgba(216, 180, 99, 0.06);
 }

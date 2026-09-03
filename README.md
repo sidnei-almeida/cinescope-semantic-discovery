@@ -5,7 +5,7 @@
 <h1 align="center">CineScope Intelligence</h1>
 
 <p align="center">
-  <strong>React · Vite · BERT semantic search · TMDb enrichment</strong><br />
+  <strong>React · Vite · FastAPI on Vercel · ONNX semantic search · TMDb enrichment</strong><br />
   <em>Cinematic UI for natural-language movie discovery and hybrid recommendations.</em>
 </p>
 
@@ -14,7 +14,7 @@
   &nbsp;·&nbsp;
   <a href="https://sidnei-almeida.github.io">Portfolio</a>
   &nbsp;·&nbsp;
-  <a href="https://tmdb-semantic-recommender.onrender.com/health">Recommender API</a>
+  <a href="https://github.com/sidnei-almeida/tmdb-semantic-recommender">Model repository</a>
 </p>
 
 <p align="center">
@@ -32,9 +32,9 @@
 
 A **dark, cinema-noir discovery experience** that combines a semantic movie recommender with rich TMDb metadata. Users search by title, mood, or natural-language theme; the app surfaces a **featured spotlight**, a **hybrid recommendation grid**, and an editorial pipeline strip—without feeling like a generic SaaS dashboard.
 
-This repository is the **frontend only**. It does not ship a backend: the browser calls external APIs (semantic model on Render + TMDb).
+This repository is **full stack**. The semantic engine runs as a Python serverless function in `api/`, deployed by Vercel alongside the static frontend, so the browser calls `/api/v1/recommend` on its own origin — no proxy, no CORS, no cold-start wake-up.
 
-> **Production recommender:** `https://tmdb-semantic-recommender.onrender.com` — `POST /api/v1/recommend` with `synopsis`, `genre`, `year`, `title`, and `top_k`.
+> **Endpoint:** `POST /api/v1/recommend` with `synopsis`, `genre`, `year`, `title`, and `top_k`. Health at `GET /api/health`.
 
 ---
 
@@ -54,7 +54,7 @@ The app is a **single-page vertical flow** (anchor navigation in the header):
 flowchart LR
   USER[User query]
   UI[React / Vite UI]
-  BERT[Semantic API on Render]
+  BERT[Semantic function /api/v1/recommend]
   TMDB[TMDb API v3]
   RANK[Client ranking & merge]
 
@@ -89,7 +89,7 @@ On first load, the app opens with a **default spotlight** (Frankenstein) so the 
 ### Recommended For You
 
 - **Hybrid shelf:** up to **10 semantic** + up to **20 TMDb complement** titles, deduplicated
-- **SEMANTIC** / **TMDb** source badges on each card
+- A **TMDb** badge marks complement results; semantic matches are the unlabelled default
 - Local **filters:** title search, source (All / Semantic / TMDb), sort (best match, year, rating, popularity)
 - **Show more** pagination (10 at a time) in a responsive **5-column grid**
 
@@ -100,9 +100,9 @@ On first load, the app opens with a **default spotlight** (Frankenstein) so the 
 
 ### Resilience
 
-- **Render cold start** handling — wake banner, retries, health check
-- **TMDb fallback** when the recommender is unavailable
+- **TMDb complement** when the semantic model returns too few visual candidates
 - Placeholder posters and copy when enrichment fails (films still appear in the grid)
+- A cold function instance answers in a few seconds; warm requests take ~40 ms
 
 ---
 
@@ -114,8 +114,8 @@ Built for a **premium noir** mood: warm blacks, graphite cards, champagne gold a
 |---------|----------------|
 | **Typography** | [Cormorant Garamond](https://fonts.google.com/specimen/Cormorant+Garamond) (display) + [Inter](https://fonts.google.com/specimen/Inter) (UI) + [JetBrains Mono](https://www.jetbrains.com/jetbrains-mono/) (API console) |
 | **Palette** | Warm charcoal backgrounds, `--accent-gold` borders, ivory text (`src/styles/tokens.css`) |
-| **Cards** | Gradient graphite panels, subtle gold borders, soft shadows |
-| **Spotlight** | Multi-column layout with bookmark rail and backdrop accent |
+| **Cards** | Flat graphite surfaces with hairline borders |
+| **Spotlight** | Three columns — poster, film, cast — over a dimmed backdrop |
 | **Brand** | Custom **film projector** mark (`public/brand-projector.svg`) |
 
 ---
@@ -140,7 +140,39 @@ Built for a **premium noir** mood: warm blacks, graphite cards, champagne gold a
 | Styling | CSS tokens + layout (`tokens.css`, `layout.css`, `global.css`) |
 | Icons | Lucide React |
 | Data | `fetch` — `src/services/recommenderApi.js`, `tmdbApi.js`, `movieEnrichment.js` |
-| Deploy | Static build on Vercel (`vercel.json` SPA rewrite) |
+| Engine | FastAPI + ONNX Runtime + NumPy (`api/index.py`, `api/_engine.py`) |
+| Deploy | Vercel — static build plus one Python serverless function |
+
+### Semantic engine
+
+The engine used to be an Annoy index on a Render dyno. Annoy is a C++ extension with no
+wheels, and its index was 132 MB, so neither could travel into a Vercel Python function.
+`scripts/export_index.py` reads the Annoy file directly and writes the artifacts in
+`api/model/`:
+
+| Artifact | Size | Purpose |
+|----------|------|---------|
+| `encoder.onnx` | 23 MB | INT8-quantized `all-MiniLM-L6-v2` |
+| `vocab.txt` | 0.2 MB | WordPiece vocabulary (30,522 tokens) |
+| `embeddings.i8.bin` | 23 MB | 62,368 × 384 per-row quantized int8 vectors |
+| `scales.f32.bin` | 0.2 MB | Per-row dequantization scales |
+| `ids.i32.bin` | 0.2 MB | Row → TMDb id |
+| `meta.jsonl` + `meta.offsets.i64.bin` | 6.7 MB | Title/year/poster/genres, seekable by row |
+
+Search is now an **exact** cosine scan over every vector (a chunked NumPy matmul, ~10 ms)
+rather than Annoy's approximate tree walk, so results are strictly better than before —
+the source film itself now reliably ranks first for its own synopsis. Quantization costs
+almost nothing: cosine fidelity against the original float vectors is 0.99997 on average.
+
+Tokenization is a pure-Python WordPiece implementation (`api/_tokenizer.py`). The
+`tokenizers` package pulls in `huggingface_hub`, `hf_xet` and `requests` — about 30 MB of
+Hub client that a function with a local vocab file never calls — and one short string per
+request does not need Rust. `scripts/check_tokenizer.py` asserts token-for-token parity
+against the reference tokenizer across 16k strings, including accents, CJK, punctuation
+and truncation edges.
+
+The deployed function comes to roughly **190 MB** unpacked (138 MB of dependencies,
+52 MB of artifacts) against Vercel's 250 MB limit.
 
 ---
 
@@ -149,7 +181,8 @@ Built for a **premium noir** mood: warm blacks, graphite cards, champagne gold a
 Copy `.env.example` to `.env` (local only — **never commit** `.env`):
 
 ```env
-# Leave empty — dev (Vite) and Vercel use same-origin proxy /recommender
+# Leave empty — the engine is served from this same deployment at /api.
+# Set it only to point a local build at a remote deployment.
 VITE_RECOMMENDER_API_URL=
 
 VITE_TMDB_API_KEY=
@@ -159,8 +192,7 @@ VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_RECOMMENDER_API_URL` | Optional override. **Leave empty** — app uses `/recommender` (Vite + Vercel rewrite, no CORS) |
-| `VITE_RECOMMENDER_DIRECT` | `true` + full API URL only if your backend allows browser CORS |
+| `VITE_RECOMMENDER_API_URL` | Optional override. **Leave empty** — the app calls `/api` on its own origin |
 | `VITE_TMDB_API_KEY` | TMDb API key — posters, cast, trailers, metadata |
 | `VITE_TMDB_READ_TOKEN` | Optional Bearer token instead of API key |
 | `VITE_TMDB_IMAGE_BASE_URL` | Image CDN (default TMDb) |
@@ -174,14 +206,21 @@ git clone https://github.com/sidnei-almeida/cinescope-semantic-discovery.git
 cd cinescope-semantic-discovery
 
 npm install
-cp .env.example .env    # add TMDb key for full enrichment
+cp .env.example .env    # optional — a project TMDb key is bundled
 
+# Terminal 1 — semantic engine on :8000
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+npm run api
+
+# Terminal 2 — Vite dev server, proxies /api to :8000
 npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
-> **Note:** The Render recommender may sleep on the free tier. The first search can take **30–60 seconds**; the UI shows a wake-up notice and retries.
+The frontend runs without the engine — search falls back to TMDb discovery — but the
+semantic grid needs `npm run api`.
 
 ### Production build
 
@@ -195,14 +234,14 @@ npm run preview
 ## Deploy on Vercel
 
 1. Import this repository on [Vercel](https://vercel.com).
-2. Framework preset: **Vite**
+2. Framework preset: **Vite** — Vercel detects `api/*.py` and builds it as a Python function.
 3. Build command: `npm run build` · Output directory: `dist`
-4. Environment variables (Production):
-   - `VITE_TMDB_API_KEY` = your TMDb key
-   - **Do not** set `VITE_RECOMMENDER_API_URL` to the Render URL (browser CORS will block it).
+4. Environment variables (Production): `VITE_TMDB_API_KEY` (optional — a project key is bundled).
 5. Deploy.
 
-`vercel.json` rewrites `/recommender/*` → Render; `vite.config.js` does the same in dev.
+`vercel.json` routes `/api/*` to the function and everything else to the SPA, and
+`includeFiles` ships `api/model/` with it. `vite.config.js` proxies `/api` to a local
+`npm run api` server during development.
 
 ---
 
@@ -216,16 +255,25 @@ cinescope-semantic-discovery/
 │   ├── brand-projector.svg        # Header / footer logo
 │   ├── hero_image.png             # Hero background
 │   └── favicon.*                  # App icons + web manifest
+├── api/                           # Vercel Python serverless function
+│   ├── index.py                   # FastAPI routes
+│   ├── _engine.py                 # Encoder + exact vector search
+│   ├── _tokenizer.py              # Pure-Python WordPiece
+│   └── model/                     # ONNX encoder, vocab, int8 index, metadata
+├── scripts/
+│   ├── export_index.py            # Annoy index → int8 artifacts (one-off)
+│   ├── check_tokenizer.py         # Parity test vs the reference tokenizer
+│   └── reference/tokenizer.json   # Reference tokenizer (test only, not deployed)
 ├── src/
 │   ├── components/                # Hero, Spotlight, Grid, Engine, Technical, …
 │   ├── services/                  # recommenderApi, tmdbApi, enrichment, ranking
 │   ├── utils/                     # mappers, filters, fallbacks
 │   ├── styles/                    # tokens, layout, global
 │   └── config/                    # constants, credentials
-├── tmdb-cinema/                   # Legacy vanilla reference (not used in build)
 ├── .env.example
+├── requirements.txt               # Python function dependencies
 ├── vercel.json
-└── vite.config.js                 # /recommender dev proxy
+└── vite.config.js                 # /api dev proxy
 ```
 
 ---
@@ -234,7 +282,7 @@ cinescope-semantic-discovery/
 
 | Service | Examples |
 |---------|----------|
-| **Recommender** | `GET /health`, `POST /api/v1/recommend` |
+| **Recommender** | `GET /api/health`, `POST /api/v1/recommend` |
 | **TMDb** | `/search/movie`, `/movie/{id}`, credits, videos, recommendations, similar |
 
 Payload example (also shown in the UI):
@@ -255,9 +303,8 @@ Payload example (also shown in the UI):
 
 | Project | Role |
 |---------|------|
-| **This repo** | Cinematic discovery frontend (React + Vite) |
-| [tmdb-semantic-recommender](https://tmdb-semantic-recommender.onrender.com) | BERT / FastAPI semantic API (hosted) |
-| `tmdb-cinema/` (local) | Early vanilla prototype — logic migrated into `src/services/` |
+| **This repo** | Cinematic discovery frontend **and** the semantic engine it runs on |
+| [tmdb-semantic-recommender](https://github.com/sidnei-almeida/tmdb-semantic-recommender) | Training pipeline and the source Annoy index / model release |
 
 ---
 

@@ -6,13 +6,10 @@ export default function ScoreStrip({ movie, semanticScore }) {
 
   if (!metrics.length) return null;
 
+  // Column count is left to CSS so the strip can reflow to two rows on narrow
+  // screens instead of squeezing every metric onto one line.
   return (
-    <div
-      className="spotlight-score-strip"
-      style={{
-        gridTemplateColumns: `repeat(${metrics.length}, minmax(72px, 1fr))`,
-      }}
-    >
+    <div className="spotlight-score-strip">
       {metrics.map((metric) => (
         <ScoreMetric
           key={metric.key}

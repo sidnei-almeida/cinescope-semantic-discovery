@@ -1,33 +1,37 @@
-/** Facts from tmdb-semantic-recommender — used in informational UI only. */
+/** Facts about the semantic engine that ships in api/. Used in informational UI only. */
 
-export const API_NAME = "TMDB Semantic Recommender API";
+export const API_NAME = "CineScope Semantic Recommender";
 export const API_ENDPOINT = "POST /api/v1/recommend";
 
+export const INDEXED_MOVIES = 62368;
+export const INDEXED_MOVIES_LABEL = "62,368";
+export const EMBEDDING_DIM = 384;
+
 export const TECH_METRICS = [
-  { label: "30k Movies", hint: "Approximate indexed library size." },
-  { label: "INT8 ONNX", hint: "Quantized semantic model for efficient inference." },
-  { label: "Annoy Index", hint: "Approximate nearest-neighbor vector search." },
+  { label: `${INDEXED_MOVIES_LABEL} Movies`, hint: "Every title in the semantic index." },
+  { label: "INT8 ONNX", hint: "Quantized MiniLM encoder, ~23 MB, CPU inference." },
+  { label: "Exact Cosine", hint: "Brute-force search over the full index — no approximation." },
   { label: "Context-Aware", hint: "Genre, year, title, and overview are embedded together." },
-  { label: "FastAPI", hint: "REST API with health checks and documentation." },
+  { label: "Serverless", hint: "Python function deployed alongside the frontend." },
   { label: "TMDb Enriched", hint: "Movie visuals, cast, trailers, and metadata." },
 ];
 
 export const MODEL_FEATURES = [
   {
     title: "ONNX Semantic Embeddings",
-    text: "Uses an INT8-quantized all-MiniLM-L6-v2 model through ONNX Runtime for efficient embedding generation.",
+    text: "An INT8-quantized all-MiniLM-L6-v2 runs on ONNX Runtime and turns movie context into a 384-dimensional vector in about 25 ms.",
   },
   {
     title: "Context-Aware Input",
-    text: 'Combines genre, year, title, and overview into a richer semantic query before recommendation.',
+    text: "Genre, year, title, and overview are folded into a single structured prompt, so the same word carries different meaning across genres.",
   },
   {
-    title: "Vector Similarity Search",
-    text: "Searches an Annoy index of roughly 30,000 movies to retrieve nearest semantic matches.",
+    title: "Exact Vector Search",
+    text: `All ${INDEXED_MOVIES_LABEL} movie vectors are stored as a quantized int8 matrix and scanned in full on every query — the nearest neighbours are exact, not approximated.`,
   },
   {
     title: "Similarity Scores",
-    text: "Returns ranked movie candidates with similarity scores that the interface uses as part of the recommendation experience.",
+    text: "Each candidate comes back with its cosine similarity, which the interface reuses when ranking and explaining a match.",
   },
 ];
 
@@ -45,8 +49,8 @@ export const DATA_FEATURES = [
     text: "TMDb details, credits, and videos power the spotlight feature and trailer playback.",
   },
   {
-    title: "Fallback Discovery",
-    text: "TMDb search can complement semantic recommendations when the model returns too few visual candidates.",
+    title: "Complementary Discovery",
+    text: "TMDb discovery results complement the semantic candidates when the model returns too few visual matches.",
   },
 ];
 
@@ -61,7 +65,7 @@ export const WORKFLOW_STEPS = [
   },
   {
     title: "Semantic API",
-    text: "FastAPI endpoint generates embeddings and searches the Annoy vector index.",
+    text: "The serverless function embeds the query and scans the full int8 vector index for exact nearest neighbours.",
   },
   {
     title: "TMDb Enrichment",
@@ -77,10 +81,10 @@ export const STACK_CHIPS = [
   "React",
   "Vite",
   "FastAPI",
+  "Vercel Functions",
   "ONNX Runtime",
   "all-MiniLM-L6-v2",
-  "Annoy Vector Search",
+  "NumPy Vector Search",
   "TMDb API",
   "Semantic Search",
-  "Recommendation Ranking",
 ];
