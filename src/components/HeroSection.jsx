@@ -1,26 +1,27 @@
 import HeroOrnamentStar from "./HeroOrnamentStar.jsx";
 import SearchHero from "./SearchHero.jsx";
 
-/** Used until a film is in the spotlight. */
-const FALLBACK_BACKDROP = "/hero_image.png";
-
 export default function HeroSection({
   onSearch,
   onSelectMovie,
   disabled,
   backdropUrl,
 }) {
-  // The hero re-uses the spotlight film's backdrop, so the top of the page
-  // reflects whatever the visitor is actually looking at.
-  const background = backdropUrl || FALLBACK_BACKDROP;
-
   return (
     <section className="hero-section" id="discover">
-      <div
-        className="hero-bg"
-        style={{ backgroundImage: `url(${background})` }}
-        aria-hidden
-      />
+      {/*
+        The hero borrows the spotlight film's own backdrop. Before a film is
+        loaded there is no photograph at all — the previous fallback was a
+        10 MB PNG that every visitor downloaded to look at for one second.
+      */}
+      <div className="hero-glow" aria-hidden />
+      {backdropUrl && (
+        <div
+          className="hero-bg"
+          style={{ backgroundImage: `url(${backdropUrl})` }}
+          aria-hidden
+        />
+      )}
       <div className="hero-vignette" aria-hidden />
       <div className="hero-grain" aria-hidden />
 
