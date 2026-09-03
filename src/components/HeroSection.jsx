@@ -1,12 +1,42 @@
+import { useEffect, useState } from "react";
 import HeroOrnamentStar from "./HeroOrnamentStar.jsx";
 import SearchHero from "./SearchHero.jsx";
+import { buildTmdbImageUrl } from "../services/tmdbApi.js";
+import {
+  BACKDROP_SIZE_HERO,
+  BACKDROP_SIZE_HERO_WIDE,
+  HERO_ORIGINAL_MIN_WIDTH,
+} from "../config/constants.js";
+
+/** Re-evaluated on resize so a window moved to a large display upgrades. */
+function useHeroBackdropSize() {
+  const [size, setSize] = useState(BACKDROP_SIZE_HERO);
+
+  useEffect(() => {
+    const query = window.matchMedia(`(min-width: ${HERO_ORIGINAL_MIN_WIDTH}px)`);
+    const apply = () =>
+      setSize(query.matches ? BACKDROP_SIZE_HERO_WIDE : BACKDROP_SIZE_HERO);
+
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, []);
+
+  return size;
+}
 
 export default function HeroSection({
   onSearch,
   onSelectMovie,
   disabled,
+  backdropPath,
   backdropUrl,
 }) {
+  const size = useHeroBackdropSize();
+  // Prefer building from the path so the hero controls its own resolution;
+  // fall back to whatever URL the caller already resolved.
+  const background = buildTmdbImageUrl(backdropPath, size) || backdropUrl;
+
   return (
     <section className="hero-section" id="discover">
       {/*
@@ -15,10 +45,10 @@ export default function HeroSection({
         10 MB PNG that every visitor downloaded to look at for one second.
       */}
       <div className="hero-glow" aria-hidden />
-      {backdropUrl && (
+      {background && (
         <div
           className="hero-bg"
-          style={{ backgroundImage: `url(${backdropUrl})` }}
+          style={{ backgroundImage: `url(${background})` }}
           aria-hidden
         />
       )}

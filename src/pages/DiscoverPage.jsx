@@ -198,6 +198,7 @@ export default function DiscoverPage() {
           onSearch={handleSearch}
           onSelectMovie={handleSelectFromSearch}
           disabled={loading}
+          backdropPath={selectedMovie?.backdropPath}
           backdropUrl={selectedMovie?.backdropUrl}
         />
 

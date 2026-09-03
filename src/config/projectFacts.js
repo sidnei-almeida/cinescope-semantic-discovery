@@ -12,7 +12,7 @@ export const TECH_METRICS = [
   { label: "INT8 ONNX", hint: "Quantized MiniLM encoder, ~23 MB, CPU inference." },
   { label: "Exact Cosine", hint: "Brute-force search over the full index — no approximation." },
   { label: "Context-Aware", hint: "Genre, year, title, and overview are embedded together." },
-  { label: "Serverless", hint: "Python function deployed alongside the frontend." },
+  { label: "Serverless", hint: "Node function deployed alongside the frontend." },
   { label: "TMDb Enriched", hint: "Movie visuals, cast, trailers, and metadata." },
 ];
 
@@ -80,11 +80,10 @@ export const WORKFLOW_STEPS = [
 export const STACK_CHIPS = [
   "React",
   "Vite",
-  "FastAPI",
   "Vercel Functions",
   "ONNX Runtime",
   "all-MiniLM-L6-v2",
-  "NumPy Vector Search",
+  "Typed-Array Vector Search",
   "TMDb API",
   "Semantic Search",
 ];

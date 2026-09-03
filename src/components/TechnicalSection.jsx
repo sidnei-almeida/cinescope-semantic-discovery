@@ -6,7 +6,7 @@ const STACK_TAGS = [
   "ONNX inference",
   "Exact vector search",
   "TMDb metadata",
-  "FastAPI on Vercel",
+  "Vercel Functions",
   "React / Vite frontend",
 ];
 
@@ -18,9 +18,9 @@ export default function TechnicalSection() {
           <span className="technical-eyebrow">For Developers</span>
           <h2 className="technical-title">Built for semantic movie discovery</h2>
           <p className="technical-lead">
-            Semantic recommendations are served by a FastAPI function deployed with this
-            site — a quantized MiniLM encoder plus an exact cosine scan over the full
-            index. The frontend enriches and ranks those results with TMDb.
+            Semantic recommendations are served by a function deployed with this site —
+            a quantized MiniLM encoder plus an exact cosine scan over the full index.
+            The frontend enriches and ranks those results with TMDb.
           </p>
 
           <div className="technical-metric" aria-label="Indexed library size">

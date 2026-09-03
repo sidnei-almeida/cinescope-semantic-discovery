@@ -4,11 +4,20 @@ export const TMDB_IMAGE_BASE =
 
 export const POSTER_SIZE = "w500";
 export const BACKDROP_SIZE = "w780";
+/**
+ * The hero paints a backdrop across the full viewport, so w780 was being
+ * upscaled three times over on a wide display. TMDb offers w1280 and the
+ * untouched original; the hero picks between them by viewport width.
+ */
+export const BACKDROP_SIZE_HERO = "w1280";
+export const BACKDROP_SIZE_HERO_WIDE = "original";
+/** Above this width, w1280 is already an upscale. */
+export const HERO_ORIGINAL_MIN_WIDTH = 1400;
 export const THUMB_SIZE = "w185";
 export const YOUTUBE_BASE_EMBED = "https://www.youtube.com/embed";
 
 /**
- * Semantic engine. It now runs as a Python serverless function in this same
+ * Semantic engine. It now runs as a serverless function in this same
  * Vercel project (see api/index.py), so the browser calls a same-origin path —
  * no proxy, no CORS, no cold-start wake-up dance.
  *
