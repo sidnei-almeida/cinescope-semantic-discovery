@@ -19,8 +19,8 @@ export default function ModelSection() {
 
       <div className="info-section__body">
         <p className="info-section-lead">
-          CineScope is powered by the <strong>{API_NAME}</strong> — a FastAPI engine that
-          converts movie context into dense embeddings using an ONNX-optimized{" "}
+          CineScope is powered by the <strong>{API_NAME}</strong> — a serverless engine
+          that converts movie context into dense embeddings using an ONNX-optimized{" "}
           <code>all-MiniLM-L6-v2</code> model. Instead of matching keywords, it compares
           meaning across movie synopses and retrieves the closest candidates from a vector
           index via <code>{API_ENDPOINT}</code>.

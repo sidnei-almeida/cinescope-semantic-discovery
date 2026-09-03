@@ -1,8 +1,7 @@
 {
   "functions": {
     "api/index.js": {
-      "includeFiles": "api/model/**",
-      "maxDuration": 30
+      "includeFiles": "api/model/**"
     }
   },
   "rewrites": [

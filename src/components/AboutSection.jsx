@@ -31,7 +31,7 @@ export default function AboutSection() {
           <p className="info-section-lead">
             CineScope Intelligence is a portfolio AI product that turns a semantic movie
             recommendation API into a cinematic discovery interface. The project combines a
-            FastAPI/ONNX recommendation engine with a React front-end, TMDb metadata
+            ONNX recommendation engine with a React front-end, TMDb metadata
             enrichment, recommendation source badges, spotlight movie previews, trailer
             playback, and a filterable results grid.
           </p>

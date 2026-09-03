@@ -5,7 +5,7 @@
 <h1 align="center">CineScope Intelligence</h1>
 
 <p align="center">
-  <strong>React · Vite · FastAPI on Vercel · ONNX semantic search · TMDb enrichment</strong><br />
+  <strong>React · Vite · ONNX semantic search on Vercel · TMDb enrichment</strong><br />
   <em>Cinematic UI for natural-language movie discovery and hybrid recommendations.</em>
 </p>
 
@@ -32,7 +32,7 @@
 
 A **dark, cinema-noir discovery experience** that combines a semantic movie recommender with rich TMDb metadata. Users search by title, mood, or natural-language theme; the app surfaces a **featured spotlight**, a **hybrid recommendation grid**, and an editorial pipeline strip—without feeling like a generic SaaS dashboard.
 
-This repository is **full stack**. The semantic engine runs as a Python serverless function in `api/`, deployed by Vercel alongside the static frontend, so the browser calls `/api/v1/recommend` on its own origin — no proxy, no CORS, no cold-start wake-up.
+This repository is **full stack**. The semantic engine runs as a Node serverless function in `api/`, deployed by Vercel alongside the static frontend, so the browser calls `/api/v1/recommend` on its own origin — no proxy, no CORS, no cold-start wake-up.
 
 > **Endpoint:** `POST /api/v1/recommend` with `synopsis`, `genre`, `year`, `title`, and `top_k`. Health at `GET /api/health`.
 
@@ -140,13 +140,13 @@ Built for a **premium noir** mood: warm blacks, graphite cards, champagne gold a
 | Styling | CSS tokens + layout (`tokens.css`, `layout.css`, `global.css`) |
 | Icons | Lucide React |
 | Data | `fetch` — `src/services/recommenderApi.js`, `tmdbApi.js`, `movieEnrichment.js` |
-| Engine | FastAPI + ONNX Runtime + NumPy (`api/index.py`, `api/_engine.py`) |
-| Deploy | Vercel — static build plus one Python serverless function |
+| Engine | ONNX Runtime on Node (`api/index.js`, `api/_engine.js`) |
+| Deploy | Vercel — static build plus one Node serverless function |
 
 ### Semantic engine
 
 The engine used to be an Annoy index on a Render dyno. Annoy is a C++ extension with no
-wheels, and its index was 132 MB, so neither could travel into a Vercel Python function.
+wheels, and its index was 132 MB, so neither could travel into a serverless function.
 `scripts/export_index.py` reads the Annoy file directly and writes the artifacts in
 `api/model/`:
 
@@ -159,20 +159,26 @@ wheels, and its index was 132 MB, so neither could travel into a Vercel Python f
 | `ids.i32.bin` | 0.2 MB | Row → TMDb id |
 | `meta.jsonl` + `meta.offsets.i64.bin` | 6.7 MB | Title/year/poster/genres, seekable by row |
 
-Search is now an **exact** cosine scan over every vector (a chunked NumPy matmul, ~10 ms)
+Search is now an **exact** cosine scan over every vector (a chunked typed-array pass, ~40 ms)
 rather than Annoy's approximate tree walk, so results are strictly better than before —
 the source film itself now reliably ranks first for its own synopsis. Quantization costs
 almost nothing: cosine fidelity against the original float vectors is 0.99997 on average.
 
-Tokenization is a pure-Python WordPiece implementation (`api/_tokenizer.py`). The
-`tokenizers` package pulls in `huggingface_hub`, `hf_xet` and `requests` — about 30 MB of
-Hub client that a function with a local vocab file never calls — and one short string per
-request does not need Rust. `scripts/check_tokenizer.py` asserts token-for-token parity
-against the reference tokenizer across 16k strings, including accents, CJK, punctuation
-and truncation edges.
+Tokenization is a WordPiece implementation in plain JavaScript (`api/_tokenizer.js`),
+because the runtime has no tokenizer library and one short string per request does not
+need one. `npm run check:tokenizer` asserts token-for-token parity against a fixture
+frozen from the reference tokenizer, covering accents, CJK, punctuation and truncation
+edges — a single token of drift would move every query vector.
 
-The deployed function comes to roughly **177 MB** unpacked (125 MB of dependencies,
-52 MB of artifacts) against Vercel's 250 MB limit.
+Inference uses **`onnxruntime-node`, not `onnxruntime-web`**. The WASM build is far
+smaller, but its int8 kernels disagree with the native CPU ones: measured over 120
+queries, WASM produced query vectors at 0.99 cosine from the reference and only **84% of
+each top-10 survived**. The index was built against the native kernels, so the query
+encoder has to use them too. With native inference the match is exact — cosine 1.000000
+against the original Python implementation, at 8 ms per query.
+
+The deployed function traces to roughly **120 MB** (45 MB ONNX Runtime for linux/x64,
+52 MB of artifacts, the rest JS) against Vercel's 250 MB limit.
 
 ---
 
@@ -209,8 +215,6 @@ npm install
 cp .env.example .env    # optional — a project TMDb key is bundled
 
 # Terminal 1 — semantic engine on :8000
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
 npm run api
 
 # Terminal 2 — Vite dev server, proxies /api to :8000
@@ -234,10 +238,7 @@ npm run preview
 ## Deploy on Vercel
 
 1. Import this repository on [Vercel](https://vercel.com).
-2. Framework preset: **Vite** — Vercel detects `api/*.py` and builds it as a Python function.
-   `.python-version` asks for CPython 3.12, and `requirements.txt` uses ranges rather
-   than pins so the install still resolves if the platform picks a different
-   interpreter — `onnxruntime` ships wheels for only some ABI tags.
+2. Framework preset: **Vite** — Vercel detects `api/index.js` and builds it as a Node function.
 3. Build command: `npm run build` · Output directory: `dist`
 4. Environment variables (Production): `VITE_TMDB_API_KEY` (optional — a project key is bundled).
 5. Deploy.
@@ -258,15 +259,17 @@ cinescope-semantic-discovery/
 │   ├── brand-projector.svg        # Header / footer logo
 │   ├── hero_image.png             # Hero background
 │   └── favicon.*                  # App icons + web manifest
-├── api/                           # Vercel Python serverless function
-│   ├── index.py                   # FastAPI routes
-│   ├── _engine.py                 # Encoder + exact vector search
-│   ├── _tokenizer.py              # Pure-Python WordPiece
+├── api/                           # Vercel Node serverless function
+│   ├── index.js                   # Routes and validation
+│   ├── _engine.js                 # Encoder + exact vector search
+│   ├── _tokenizer.js              # WordPiece
 │   └── model/                     # ONNX encoder, vocab, int8 index, metadata
 ├── scripts/
 │   ├── export_index.py            # Annoy index → int8 artifacts (one-off)
-│   ├── check_tokenizer.py         # Parity test vs the reference tokenizer
-│   └── reference/tokenizer.json   # Reference tokenizer (test only, not deployed)
+│   ├── build_brand_assets.py      # Brand SVG → favicons, PWA icons, .ico
+│   ├── dev-api.mjs                # Runs the handler behind a local HTTP server
+│   ├── check_tokenizer.mjs        # Parity test vs the reference fixture
+│   └── reference/                 # Reference tokenizer + fixture (test only)
 ├── src/
 │   ├── components/                # Hero, Spotlight, Grid, Engine, Technical, …
 │   ├── services/                  # recommenderApi, tmdbApi, enrichment, ranking
@@ -274,7 +277,6 @@ cinescope-semantic-discovery/
 │   ├── styles/                    # tokens, layout, global
 │   └── config/                    # constants, credentials
 ├── .env.example
-├── requirements.txt               # Python function dependencies
 ├── vercel.json
 └── vite.config.js                 # /api dev proxy
 ```

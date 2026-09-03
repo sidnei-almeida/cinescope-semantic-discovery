@@ -39,3 +39,7 @@ Thumbs.db
 # OS / misc
 *.pem
 coverage
+
+# Python bytecode from the offline scripts
+__pycache__/
+*.pyc

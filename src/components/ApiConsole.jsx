@@ -15,7 +15,7 @@ export default function ApiConsole({ stackTags = [] }) {
         </div>
       </div>
       <p className="api-console-note">
-        Same-origin Python serverless function. The encoder and the{" "}
+        Same-origin serverless function. The encoder and the{" "}
         {INDEXED_MOVIES_LABEL}-vector index ship with the deployment, so there is no
         external service to wake up — a warm request answers in about 40 ms.
       </p>

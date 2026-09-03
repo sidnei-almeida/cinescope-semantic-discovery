@@ -23,7 +23,7 @@ export default function EngineSection() {
       <div className="info-section__body">
         <p className="info-section-lead">
           A search is first turned into movie context. CineScope posts synopsis, genre,
-          year, title, and <code>top_k</code> to <code>{API_ENDPOINT}</code> — a Python
+          year, title, and <code>top_k</code> to <code>{API_ENDPOINT}</code> — a
           serverless function running next to this bundle. It embeds the query with a
           quantized MiniLM encoder, scans every indexed vector for the exact nearest
           neighbours, and returns ranked candidates. The front-end then enriches them with

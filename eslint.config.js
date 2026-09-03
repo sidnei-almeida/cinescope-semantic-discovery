@@ -18,4 +18,11 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // The serverless function, its dev harness and the offline scripts run on
+    // Node, not in a browser.
+    files: ['api/**/*.js', 'scripts/**/*.{js,mjs}', 'vite.config.js'],
+    languageOptions: { globals: globals.node },
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

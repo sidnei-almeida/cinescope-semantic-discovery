@@ -4,11 +4,15 @@
  * Text goes in, the nearest films in a 62k-vector index come out. Two pieces:
  *
  *   encode  A quantized MiniLM ONNX encoder turns the metadata soup into a
- *           384-dimensional unit vector. It runs on onnxruntime-web's WASM
- *           backend rather than onnxruntime-node: the native package ships
- *           binaries for five platforms (283 MB) and resolves them at runtime,
- *           which is both too large and too fragile to bundle. WASM costs about
- *           30 ms per query and has no ABI to get wrong.
+ *           384-dimensional unit vector, in about 8 ms.
+ *
+ *           This uses onnxruntime-node, not onnxruntime-web. The WASM build is
+ *           far smaller, but its int8 kernels do not agree with the native CPU
+ *           ones: query vectors came out at 0.99 cosine from the reference, and
+ *           only 84% of each top-10 survived. The index was built against the
+ *           native kernels, so the query encoder has to use them too. The npm
+ *           package ships binaries for five platforms; scripts/prune-runtime.mjs
+ *           drops the four the deployment cannot run.
  *
  *   search  Every vector is scanned. The catalogue is stored as a per-row
  *           quantized int8 matrix (23 MB, exported from the original Annoy
@@ -21,10 +25,9 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
-import * as ort from "onnxruntime-web";
+import * as ort from "onnxruntime-node";
 
 const MODEL_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "model");
 const DIM = 384;
@@ -33,30 +36,6 @@ const DIM = 384;
 const CHUNK_ROWS = 4096;
 
 export class EngineNotReady extends Error {}
-
-/**
- * onnxruntime-web looks for its .wasm next to the bundled JS by default, which
- * is not where it lands once the function is packaged. Point it at the package.
- */
-function resolveWasmDirectory() {
-  const require = createRequire(import.meta.url);
-  const candidates = [];
-
-  try {
-    candidates.push(path.dirname(require.resolve("onnxruntime-web")));
-  } catch {
-    // Resolution can fail under a bundler; fall through to the layout guesses.
-  }
-  candidates.push(path.join(process.cwd(), "node_modules", "onnxruntime-web", "dist"));
-  candidates.push(path.join(MODEL_DIR, "..", "..", "node_modules", "onnxruntime-web", "dist"));
-
-  for (const directory of candidates) {
-    if (fs.existsSync(path.join(directory, "ort-wasm-simd-threaded.wasm"))) {
-      return directory.endsWith(path.sep) ? directory : `${directory}${path.sep}`;
-    }
-  }
-  throw new EngineNotReady("could not locate the onnxruntime-web wasm assets");
-}
 
 export class SemanticEngine {
   constructor(modelDir = MODEL_DIR) {
@@ -72,14 +51,13 @@ export class SemanticEngine {
       throw new EngineNotReady(`expected ${DIM}-dimensional vectors, got ${this.manifest.dim}`);
     }
 
-    ort.env.wasm.wasmPaths = resolveWasmDirectory();
-    ort.env.wasm.numThreads = 1;
-    ort.env.wasm.proxy = false;
     ort.env.logLevel = "error";
 
     this.session = await ort.InferenceSession.create(path.join(this.modelDir, "encoder.onnx"), {
-      executionProviders: ["wasm"],
+      executionProviders: ["cpu"],
       graphOptimizationLevel: "basic",
+      interOpNumThreads: 1,
+      intraOpNumThreads: 1,
     });
 
     const { BertWordPieceTokenizer } = await import("./_tokenizer.js");
