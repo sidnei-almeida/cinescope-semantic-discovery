@@ -11,11 +11,7 @@ import {
 } from "../services/movieEnrichment.js";
 import { isThematicQuery } from "../services/recommenderApi.js";
 import { resolveDefaultSpotlightMovie } from "../utils/defaultSpotlight.js";
-import {
-  delay,
-  runWithRecommendationStages,
-  startWakeMessageTimers,
-} from "../utils/loadingStages.js";
+import { runWithRecommendationStages } from "../utils/loadingStages.js";
 
 export default function DiscoverPage() {
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -23,10 +19,8 @@ export default function DiscoverPage() {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState(null);
-  const [inlineStatusMessage, setInlineStatusMessage] = useState(null);
   const [usedTmdbFallback, setUsedTmdbFallback] = useState(false);
   const [error, setError] = useState(null);
-  const [wakingUp, setWakingUp] = useState(false);
   const initialLoadDone = useRef(false);
 
   const applyRecommendations = useCallback((recs, fallback) => {
@@ -37,12 +31,9 @@ export default function DiscoverPage() {
   const loadMovieById = useCallback(
     async (movieId, options = {}) => {
       const { keepRecommendations = false } = options;
-      let clearSearchWake = null;
 
       setLoading(true);
       setError(null);
-      setWakingUp(false);
-      setInlineStatusMessage(null);
       if (!keepRecommendations) setRecommendations([]);
 
       try {
@@ -53,22 +44,17 @@ export default function DiscoverPage() {
         setSelectedScore(null);
 
         if (!keepRecommendations) {
-          clearSearchWake = startWakeMessageTimers(setInlineStatusMessage);
-
           const result = await runWithRecommendationStages(setLoadingStage, () =>
             processRecommendations(movieId, details)
           );
           applyRecommendations(result.recommendations, result.usedTmdbFallback);
         }
       } catch (err) {
-        if (err.isWakeUp) setWakingUp(true);
         setError(err.message || "Recommendation engine failed.");
         console.error("[CineScope]", err);
       } finally {
-        clearSearchWake?.();
         setLoading(false);
         setLoadingStage(null);
-        setInlineStatusMessage(null);
       }
     },
     [applyRecommendations]
@@ -115,12 +101,9 @@ export default function DiscoverPage() {
   const handleSearch = useCallback(
     async (query) => {
       const trimmed = String(query ?? "").trim();
-      let clearSearchWake = null;
 
       setLoading(true);
       setError(null);
-      setWakingUp(false);
-      setInlineStatusMessage(null);
       setRecommendations([]);
 
       try {
@@ -128,8 +111,6 @@ export default function DiscoverPage() {
           setError("Try a longer movie description, theme, or title.");
           return;
         }
-
-        clearSearchWake = startWakeMessageTimers(setInlineStatusMessage);
 
         if (isThematicQuery(trimmed)) {
           const result = await runWithRecommendationStages(setLoadingStage, () =>
@@ -147,16 +128,12 @@ export default function DiscoverPage() {
 
         const tmdbResults = await searchMovie(trimmed, { limit: 1 });
         if (tmdbResults.length > 0) {
-          clearSearchWake?.();
-          clearSearchWake = null;
           await loadMovieById(tmdbResults[0].id);
           return;
         }
 
         if (trimmed.length < 10) {
-          setError(
-            "Try describing a movie, theme, or mood with a little more detail."
-          );
+          setError("Try describing a movie, theme, or mood with a little more detail.");
           return;
         }
 
@@ -171,20 +148,15 @@ export default function DiscoverPage() {
 
         await applySynopsisResults(result.recommendations, result.usedTmdbFallback);
       } catch (err) {
-        if (err.isWakeUp) setWakingUp(true);
         if (err.code === "QUERY_TOO_SHORT") {
-          setError(
-            "Try describing a movie, theme, or mood with a little more detail."
-          );
+          setError("Try describing a movie, theme, or mood with a little more detail.");
         } else {
           setError(err.message || "Recommendation engine failed.");
         }
         console.error("[CineScope]", err);
       } finally {
-        clearSearchWake?.();
         setLoading(false);
         setLoadingStage(null);
-        setInlineStatusMessage(null);
       }
     },
     [loadMovieById, applySynopsisResults]
@@ -201,23 +173,23 @@ export default function DiscoverPage() {
 
     setLoading(true);
     setError(null);
-    setInlineStatusMessage(null);
 
     try {
       setLoadingStage("spotlight");
       const details = await getMovieDetails(movieId);
       setSelectedMovie(normalizeSourceMovie(details));
-      document.getElementById("spotlight")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document
+        .getElementById("spotlight")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch {
       setSelectedMovie(entry.movie);
     } finally {
       setLoading(false);
       setLoadingStage(null);
-      setInlineStatusMessage(null);
     }
   }, []);
 
-  const showInlineStatus = loading && (loadingStage || inlineStatusMessage);
+  const activeStage = loading ? loadingStage : null;
 
   return (
     <div className="page-enter">
@@ -226,17 +198,12 @@ export default function DiscoverPage() {
           onSearch={handleSearch}
           onSelectMovie={handleSelectFromSearch}
           disabled={loading}
+          backdropUrl={selectedMovie?.backdropUrl}
         />
 
-        {(wakingUp || error) && (
+        {error && (
           <div className="page-alerts page-container">
-            {wakingUp && (
-              <div className="wake-banner">
-                O modelo semântico no Render está acordando — tente buscar de novo em alguns
-                segundos.
-              </div>
-            )}
-            {error && <div className="error-banner">{error}</div>}
+            <div className="error-banner">{error}</div>
           </div>
         )}
 
@@ -244,8 +211,7 @@ export default function DiscoverPage() {
           movie={selectedMovie}
           semanticScore={selectedScore}
           loading={loading && !selectedMovie}
-          loadingStage={showInlineStatus ? loadingStage : null}
-          inlineStatusMessage={showInlineStatus ? inlineStatusMessage : null}
+          loadingStage={activeStage}
         />
 
         <div className={clsx("page-stream", loading && "page-stream--dimmed")}>
@@ -255,8 +221,7 @@ export default function DiscoverPage() {
             onSelect={handleSelectRecommendation}
             usedTmdbFallback={usedTmdbFallback}
             loading={loading}
-            loadingStage={showInlineStatus ? loadingStage : null}
-            inlineStatusMessage={showInlineStatus ? inlineStatusMessage : null}
+            loadingStage={activeStage}
           />
         </div>
       </main>
