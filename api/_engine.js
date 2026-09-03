@@ -29,8 +29,34 @@ import { fileURLToPath } from "node:url";
 
 import * as ort from "onnxruntime-node";
 
-const MODEL_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "model");
 const DIM = 384;
+
+/**
+ * Where the artifacts live at runtime.
+ *
+ * Sitting next to this module is the normal answer, but a bundler can move the
+ * entry point away from the source tree, at which point import.meta.url no
+ * longer points anywhere near api/model. Rather than assume a packaging
+ * strategy, try the layouts that actually occur and fail loudly if none has the
+ * manifest.
+ */
+function resolveModelDir() {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.join(here, "model"),
+    path.join(here, "api", "model"),
+    path.join(process.cwd(), "api", "model"),
+    path.join(process.cwd(), "model"),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(path.join(candidate, "manifest.json"))) return candidate;
+  }
+
+  throw new EngineNotReady(
+    `model artifacts not found; looked in ${candidates.join(", ")}`
+  );
+}
 
 /** Rows scored per pass. Keeps the hot loop's working set cache-friendly. */
 const CHUNK_ROWS = 4096;
@@ -38,12 +64,13 @@ const CHUNK_ROWS = 4096;
 export class EngineNotReady extends Error {}
 
 export class SemanticEngine {
-  constructor(modelDir = MODEL_DIR) {
+  constructor(modelDir = null) {
     this.modelDir = modelDir;
     this.loaded = false;
   }
 
   async load() {
+    this.modelDir ??= resolveModelDir();
     this.manifest = JSON.parse(fs.readFileSync(path.join(this.modelDir, "manifest.json"), "utf8"));
     this.count = this.manifest.count;
 
