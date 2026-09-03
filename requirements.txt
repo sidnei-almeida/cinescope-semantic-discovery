@@ -1,6 +1,9 @@
-# Pinned against CPython 3.12 (see .python-version). onnxruntime publishes no
-# wheels beyond cp313, so an unpinned interpreter breaks the build outright.
-fastapi==0.115.12
-pydantic==2.11.7
-numpy==2.2.6
-onnxruntime==1.22.1
+# Ranges, not pins: the build platform chooses the interpreter, and a pinned
+# onnxruntime publishes wheels for only some ABI tags. Pinning 1.22.1 broke the
+# build outright once the platform moved to CPython 3.14 (no cp314 wheels).
+# These resolve on 3.12 and 3.14 alike, and the newer onnxruntime happens to
+# drop sympy, taking the function from ~190 MB to ~177 MB.
+fastapi>=0.115,<1
+pydantic>=2.11,<3
+numpy>=2.2,<3
+onnxruntime>=1.22,<2

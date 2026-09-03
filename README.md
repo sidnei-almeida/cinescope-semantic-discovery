@@ -171,7 +171,7 @@ request does not need Rust. `scripts/check_tokenizer.py` asserts token-for-token
 against the reference tokenizer across 16k strings, including accents, CJK, punctuation
 and truncation edges.
 
-The deployed function comes to roughly **190 MB** unpacked (138 MB of dependencies,
+The deployed function comes to roughly **177 MB** unpacked (125 MB of dependencies,
 52 MB of artifacts) against Vercel's 250 MB limit.
 
 ---
@@ -235,8 +235,9 @@ npm run preview
 
 1. Import this repository on [Vercel](https://vercel.com).
 2. Framework preset: **Vite** — Vercel detects `api/*.py` and builds it as a Python function.
-   `.python-version` pins CPython 3.12; the build defaults to a newer interpreter than
-   `onnxruntime` publishes wheels for, and `uv pip install` fails without the pin.
+   `.python-version` asks for CPython 3.12, and `requirements.txt` uses ranges rather
+   than pins so the install still resolves if the platform picks a different
+   interpreter — `onnxruntime` ships wheels for only some ABI tags.
 3. Build command: `npm run build` · Output directory: `dist`
 4. Environment variables (Production): `VITE_TMDB_API_KEY` (optional — a project key is bundled).
 5. Deploy.
