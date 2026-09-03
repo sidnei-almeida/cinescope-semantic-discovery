@@ -1,11 +1,18 @@
 {
   "functions": {
-    "api/index.py": {
-      "includeFiles": "api/**"
+    "api/index.js": {
+      "includeFiles": "api/model/**",
+      "maxDuration": 30
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ]
 }
