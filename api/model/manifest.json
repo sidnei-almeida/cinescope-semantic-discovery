@@ -1,0 +1,7 @@
+{
+  "count": 62368,
+  "dim": 384,
+  "dtype": "int8",
+  "quantization": "per-row-symmetric",
+  "source_index": "movies.ann"
+}
