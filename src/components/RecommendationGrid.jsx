@@ -24,7 +24,8 @@ const SORT_OPTIONS = [
   { value: "popularity", label: "Popularity" },
 ];
 
-const PAGE_SIZE = 10;
+/** A multiple of the widest column count (6), so pages tile without a ragged tail. */
+const PAGE_SIZE = 12;
 
 export default function RecommendationGrid({
   recommendations,

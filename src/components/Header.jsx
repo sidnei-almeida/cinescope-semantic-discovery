@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import clsx from "clsx";
@@ -14,12 +14,22 @@ const NAV_LINKS = [
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // The bar is translucent over the hero and becomes an opaque surface once
+  // content scrolls beneath it.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="site-header">
+    <header className={clsx("site-header", scrolled && "site-header--scrolled")}>
       <div className="site-header__inner">
         <NavLink to="/" end className="brand" onClick={() => setMobileOpen(false)}>
-          <img src="/brand-projector.svg" alt="" className="brand-mark" width={32} height={32} />
+          <img src="/brand-aperture.svg" alt="" className="brand-mark" width={32} height={32} />
           <span className="brand-name">CineScope Intelligence</span>
         </NavLink>
 
