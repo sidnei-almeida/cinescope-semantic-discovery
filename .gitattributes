@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Model artifacts are binary; never normalize or diff them.
+api/model/*.bin binary
+api/model/*.onnx binary
+api/model/meta.jsonl -text -diff
