@@ -1,3 +1,5 @@
+# Pinned against CPython 3.12 (see .python-version). onnxruntime publishes no
+# wheels beyond cp313, so an unpinned interpreter breaks the build outright.
 fastapi==0.115.12
 pydantic==2.11.7
 numpy==2.2.6

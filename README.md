@@ -235,6 +235,8 @@ npm run preview
 
 1. Import this repository on [Vercel](https://vercel.com).
 2. Framework preset: **Vite** — Vercel detects `api/*.py` and builds it as a Python function.
+   `.python-version` pins CPython 3.12; the build defaults to a newer interpreter than
+   `onnxruntime` publishes wheels for, and `uv pip install` fails without the pin.
 3. Build command: `npm run build` · Output directory: `dist`
 4. Environment variables (Production): `VITE_TMDB_API_KEY` (optional — a project key is bundled).
 5. Deploy.
