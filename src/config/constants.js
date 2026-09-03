@@ -8,46 +8,23 @@ export const THUMB_SIZE = "w185";
 export const YOUTUBE_BASE_EMBED = "https://www.youtube.com/embed";
 
 /**
- * API semântica em produção (FastAPI + BERT + Annoy no Render).
- * Este é o backend do portfólio — não foi removido nem substituído.
+ * Semantic engine. It now runs as a Python serverless function in this same
+ * Vercel project (see api/index.py), so the browser calls a same-origin path —
+ * no proxy, no CORS, no cold-start wake-up dance.
+ *
+ * VITE_RECOMMENDER_API_URL only exists as an escape hatch for pointing a local
+ * dev build at a remote deployment.
  */
-export const SEMANTIC_MODEL_SERVICE_URL =
-  "https://tmdb-semantic-recommender.onrender.com";
+export const RECOMMENDER_BASE_URL =
+  import.meta.env.VITE_RECOMMENDER_API_URL?.trim().replace(/\/$/, "") || "";
 
-/** Caminho no browser; Vite/Vercel repassam para SEMANTIC_MODEL_SERVICE_URL (só evita CORS). */
-export const RECOMMENDER_PROXY_PATH = "/recommender";
-
-/**
- * Browser → /recommender → proxy → Render (SEMANTIC_MODEL_SERVICE_URL).
- * O modelo continua rodando no Render; o proxy é um túnel HTTP, não um fallback.
- */
-function resolveRecommenderBaseUrl() {
-  const envUrl = import.meta.env.VITE_RECOMMENDER_API_URL?.trim();
-  const useDirect =
-    import.meta.env.VITE_RECOMMENDER_DIRECT === "true" ||
-    import.meta.env.VITE_RECOMMENDER_DIRECT === "1";
-
-  if (useDirect && envUrl) {
-    return envUrl.replace(/\/$/, "");
-  }
-
-  if (
-    !envUrl ||
-    envUrl === RECOMMENDER_PROXY_PATH ||
-    envUrl.includes("onrender.com")
-  ) {
-    return RECOMMENDER_PROXY_PATH;
-  }
-
-  return envUrl.replace(/\/$/, "");
-}
-
-export const RECOMMENDER_BASE_URL = resolveRecommenderBaseUrl();
+export const RECOMMEND_ENDPOINT = `${RECOMMENDER_BASE_URL}/api/v1/recommend`;
+export const HEALTH_ENDPOINT = `${RECOMMENDER_BASE_URL}/api/health`;
 
 export const REQUEST_TIMEOUT_MS = 14000;
 export const LONG_REQUEST_TIMEOUT_MS = 22000;
-/** Render free tier pode levar 20–50s no cold start; 8s causava fallback TMDb sempre. */
-export const BERT_API_TIMEOUT_MS = 28000;
+/** Serverless: ~40ms warm, a few seconds on a cold instance. */
+export const RECOMMENDER_TIMEOUT_MS = 12000;
 export const MAX_RECOMMENDATIONS = 50;
 /** Cards exibidos na shelf (híbrido: até 20 semânticos + até 20 TMDb). */
 export const SEMANTIC_MERGE_TOP = 20;

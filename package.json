@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "api": "python -m uvicorn index:app --app-dir api --port 8000 --reload",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

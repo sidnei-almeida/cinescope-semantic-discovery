@@ -1,14 +1,15 @@
-import { RECOMMENDER_BASE_URL, BERT_API_TIMEOUT_MS } from "../config/constants.js";
+import {
+  RECOMMEND_ENDPOINT,
+  HEALTH_ENDPOINT,
+  RECOMMENDER_TIMEOUT_MS,
+} from "../config/constants.js";
 import { fetchWithTimeout, searchMovie, getMovieDetails } from "./tmdbApi.js";
 import { normalizeRecommenderResponse } from "../utils/movieMappers.js";
 import { devLog } from "../utils/devLog.js";
 
-const API_BASE_URL = RECOMMENDER_BASE_URL;
 const DEFAULT_TOP_K = 12;
 const MIN_SYNOPSIS_CHARS = 10;
 const MAX_SYNOPSIS_CHARS = 5000;
-
-export { API_BASE_URL, RECOMMENDER_BASE_URL };
 
 export function clampTopK(topK) {
   const n = Number(topK);
@@ -136,16 +137,12 @@ export async function getRecommendations({
   topK = DEFAULT_TOP_K,
   signal,
 }) {
-  if (!API_BASE_URL) {
-    throw new Error("Missing recommender API URL (VITE_RECOMMENDER_API_URL or dev proxy)");
-  }
-
   const body = buildRequestBody({ synopsis, genre, year, title, topK });
   if (import.meta.env.DEV) {
     console.log("[CineScope] payload sent to recommender", body);
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/recommend`, {
+  const response = await fetch(RECOMMEND_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -173,7 +170,7 @@ export async function getRecommendations({
 }
 
 async function getRecommendationsWithRetry(params, options = {}) {
-  const { retries = 2, timeout = BERT_API_TIMEOUT_MS } = options;
+  const { retries = 1, timeout = RECOMMENDER_TIMEOUT_MS } = options;
   let lastError;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -181,36 +178,35 @@ async function getRecommendationsWithRetry(params, options = {}) {
     const timer = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const data = await getRecommendations({
-        ...params,
-        signal: controller.signal,
-      });
+      const data = await getRecommendations({ ...params, signal: controller.signal });
       clearTimeout(timer);
       return data;
     } catch (error) {
       clearTimeout(timer);
       lastError = error;
 
-      const is503 = error.message?.includes("503");
-      const isTimeout = error.name === "AbortError";
-      const isNetwork =
-        error.name === "TypeError" || error.message?.includes("Failed to fetch");
+      // A cold serverless instance can 503 while the engine loads; anything
+      // else is a real failure and should surface immediately.
+      const retriable =
+        error.message?.includes("503") ||
+        error.name === "AbortError" ||
+        error.name === "TypeError" ||
+        error.message?.includes("Failed to fetch");
 
-      if ((is503 || isTimeout || isNetwork) && attempt < retries) {
-        await sleep(2000 * (attempt + 1));
+      if (retriable && attempt < retries) {
+        await sleep(600);
         continue;
       }
 
-      if (is503) {
-        const err = new Error(error.message);
-        err.isWakeUp = true;
-        throw err;
+      if (error.name === "AbortError") {
+        throw new Error("The recommendation engine took too long to respond.", {
+          cause: error,
+        });
       }
-
-      if (isNetwork) {
-        throw new Error(
-          "Recommendation engine failed. The service may be waking up — try again."
-        );
+      if (retriable) {
+        throw new Error("The recommendation engine is unavailable right now.", {
+          cause: error,
+        });
       }
 
       throw error;
@@ -262,52 +258,18 @@ export async function fetchRecommendationsBySynopsis(synopsis, topK = DEFAULT_TO
 /** @deprecated use buildRecommendationPayloadFromMovie */
 export const buildRecommendRequestFromMovie = buildRecommendationPayloadFromMovie;
 
-export async function checkRecommenderHealth(baseUrl = API_BASE_URL) {
+export async function checkRecommenderHealth() {
   try {
-    const response = await fetchWithTimeout(`${baseUrl}/health`, {}, 20000);
+    const response = await fetchWithTimeout(HEALTH_ENDPOINT, {}, 8000);
     if (!response.ok) return { ok: false, modelLoaded: false, statusCode: response.status };
     const data = await response.json();
-    const healthy = data.status === "healthy";
-    const modelLoaded = Boolean(data.model_loaded);
     return {
-      ok: healthy && modelLoaded,
-      modelLoaded,
-      healthy,
+      ok: data.status === "healthy" && Boolean(data.model_loaded),
+      modelLoaded: Boolean(data.model_loaded),
+      indexedMovies: data.count ?? null,
       statusCode: response.status,
     };
   } catch {
-    return { ok: false, modelLoaded: false, healthy: false, statusCode: null };
-  }
-}
-
-/**
- * Polls /health until HTTP 200 + status healthy + model loaded (cold start on Render).
- */
-export async function waitForRecommenderReady(options = {}) {
-  const {
-    baseUrl = API_BASE_URL,
-    pollIntervalMs = 2500,
-    requestTimeoutMs = 18000,
-    maxWaitMs = 180000,
-    signal,
-  } = options;
-
-  const started = Date.now();
-
-  while (true) {
-    if (signal?.aborted) {
-      return { ok: false, modelLoaded: false, aborted: true };
-    }
-
-    if (Date.now() - started > maxWaitMs) {
-      return { ok: false, modelLoaded: false, timedOut: true };
-    }
-
-    const health = await checkRecommenderHealth(baseUrl);
-    if (health.ok && health.statusCode === 200) {
-      return { ok: true, modelLoaded: true };
-    }
-
-    await sleep(pollIntervalMs);
+    return { ok: false, modelLoaded: false, statusCode: null };
   }
 }
