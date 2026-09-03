@@ -33,7 +33,6 @@ export default function RecommendationGrid({
   usedTmdbFallback,
   loading,
   loadingStage,
-  inlineStatusMessage,
 }) {
   const [titleFilter, setTitleFilter] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -78,9 +77,9 @@ export default function RecommendationGrid({
 
   return (
     <section className="recommendations-section" id="movies">
-      {(loadingStage || inlineStatusMessage) && (
+      {loadingStage && (
         <div className="recommendations-loading-bar">
-          <InlineLoadingStatus stage={loadingStage} message={inlineStatusMessage} />
+          <InlineLoadingStatus stage={loadingStage} />
         </div>
       )}
 

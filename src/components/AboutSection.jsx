@@ -19,17 +19,19 @@ export default function AboutSection() {
       className="info-section info-section--about about-section"
       aria-labelledby="about-title"
     >
-      <span className="info-section-eyebrow">Project</span>
-      <h2 id="about-title" className="info-section-title">
-        About CineScope Intelligence
-      </h2>
+      <header className="info-section__head">
+        <span className="info-section-eyebrow">Project</span>
+        <h2 id="about-title" className="info-section-title">
+          About CineScope Intelligence
+        </h2>
+      </header>
 
-      <div className="about-shell">
+      <div className="info-section__body about-shell">
         <div className="about-copy">
           <p className="info-section-lead">
             CineScope Intelligence is a portfolio AI product that turns a semantic movie
             recommendation API into a cinematic discovery interface. The project combines a
-            FastAPI/ONNX recommendation backend with a React front-end, TMDb metadata
+            FastAPI/ONNX recommendation engine with a React front-end, TMDb metadata
             enrichment, recommendation source badges, spotlight movie previews, trailer
             playback, and a filterable results grid.
           </p>

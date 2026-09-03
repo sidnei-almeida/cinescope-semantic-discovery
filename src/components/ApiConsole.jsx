@@ -1,8 +1,6 @@
-import { SEMANTIC_MODEL_SERVICE_URL } from "../config/constants.js";
+import { API_ENDPOINT, INDEXED_MOVIES_LABEL } from "../config/projectFacts.js";
 
 export default function ApiConsole({ stackTags = [] }) {
-  const endpoint = `${SEMANTIC_MODEL_SERVICE_URL}/api/v1/recommend`;
-
   return (
     <div className="api-console">
       <div className="api-console-header">
@@ -13,12 +11,13 @@ export default function ApiConsole({ stackTags = [] }) {
         </div>
         <div className="api-console-route">
           <span className="api-method">POST</span>
-          <code className="api-path">{endpoint}</code>
+          <code className="api-path">/api/v1/recommend</code>
         </div>
       </div>
       <p className="api-console-note">
-        Hosted on Render (BERT + Annoy). The Vercel app proxies <code>/recommender</code>{" "}
-        to this API so the browser avoids CORS — inference still runs on Render.
+        Same-origin Python serverless function. The encoder and the{" "}
+        {INDEXED_MOVIES_LABEL}-vector index ship with the deployment, so there is no
+        external service to wake up — a warm request answers in about 40 ms.
       </p>
       <pre className="api-console-body">{`{
   "synopsis": "A thief who steals secrets through dreams…",
@@ -39,3 +38,5 @@ export default function ApiConsole({ stackTags = [] }) {
     </div>
   );
 }
+
+export { API_ENDPOINT };
