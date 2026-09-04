@@ -7,6 +7,8 @@
  * vercel.json routes every /api/* path here, so this handler does its own
  * dispatch on the original request path.
  */
+import * as ort from "onnxruntime-node";
+
 import { getEngine } from "./_engine.js";
 
 const MAX_TOP_K = 50;
@@ -82,6 +84,15 @@ export default async function handler(req, res) {
         model_loaded: engine.loaded,
         count: engine.count,
         dim: engine.manifest.dim,
+        // Which runtime actually executed matters: int8 kernels differ
+        // between builds and between CPUs, which moves every query vector.
+        runtime: {
+          platform: process.platform,
+          arch: process.arch,
+          node: process.version,
+          ort: ort.env?.versions ?? null,
+          model_dir: engine.modelDir,
+        },
       });
     } catch (error) {
       return send(res, 503, { detail: `Recommendation engine unavailable: ${error.message}` });

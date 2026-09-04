@@ -177,8 +177,19 @@ each top-10 survived**. The index was built against the native kernels, so the q
 encoder has to use them too. With native inference the match is exact — cosine 1.000000
 against the original Python implementation, at 8 ms per query.
 
-The deployed function traces to roughly **120 MB** (45 MB ONNX Runtime for linux/x64,
-52 MB of artifacts, the rest JS) against Vercel's 250 MB limit.
+The deployed function comes to **95 MB** (43 MB ONNX Runtime for linux/x64, 52 MB of
+artifacts) against Vercel's 250 MB limit. Two things keep it there, and both are load
+bearing:
+
+- `vercel.json` excludes the four platforms the deployment cannot run. The npm package
+  bundles binaries for five, 283 MB installed.
+- `ONNXRUNTIME_NODE_INSTALL_CUDA=skip` is set on the project. Without it the installer
+  adds CUDA execution providers to the linux build, which take that directory from
+  67 MB to 263 MB and push the function past the limit on its own.
+
+If a deploy ever fails on function size, suspect a stale build cache before suspecting
+the code: a cache populated before the CUDA setting was in place keeps serving the
+bloated tree, and `vercel deploy --force` is what clears it.
 
 ---
 

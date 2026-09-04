@@ -7,7 +7,6 @@
     "dev": "vite",
     "api": "node scripts/dev-api.mjs",
     "build": "vite build",
-    "postinstall": "[ -n \"$VERCEL\" ] && rm -rf node_modules/onnxruntime-node/bin/napi-v*/darwin node_modules/onnxruntime-node/bin/napi-v*/win32 node_modules/onnxruntime-node/bin/napi-v*/linux/arm64 || true",
     "lint": "eslint .",
     "preview": "vite preview",
     "check:tokenizer": "node scripts/check_tokenizer.mjs"
